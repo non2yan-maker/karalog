@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>KaraLog</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMTgwIDE4MCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyQTFBMDgiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMEEwNjA0Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnb2xkIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGMENDNkEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiNENEFGMzciLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQTA3ODIwIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJwdXJwbGUiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0IwOTBGRiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3QjVGRDQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iNDAiIGZpbGw9InVybCgjYmcpIi8+CiAgPHJlY3QgeD0iNCIgeT0iNCIgd2lkdGg9IjE3MiIgaGVpZ2h0PSIxNzIiIHJ4PSIzNyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOEI2OTE0IiBzdHJva2Utd2lkdGg9IjUiLz4KICA8cmVjdCB4PSIxMSIgeT0iMTEiIHdpZHRoPSIxNTgiIGhlaWdodD0iMTU4IiByeD0iMzIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzVBNDAxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHJlY3QgeD0iMTQiIHk9IjE0IiB3aWR0aD0iMTUyIiBoZWlnaHQ9IjE1MiIgcng9IjI5IiBmaWxsPSJub25lIiBzdHJva2U9IiNENEFGMzciIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtZGFzaGFycmF5PSI1LDQiIG9wYWNpdHk9IjAuNTUiLz4KICA8cmVjdCB4PSIxOCIgeT0iODIiIHdpZHRoPSI3IiBoZWlnaHQ9IjE2IiByeD0iMyIgZmlsbD0idXJsKCNwdXJwbGUpIiBvcGFjaXR5PSIwLjc1Ii8+CiAgPHJlY3QgeD0iMjciIHk9IjY4IiB3aWR0aD0iNyIgaGVpZ2h0PSI0NCIgcng9IjMiIGZpbGw9InVybCgjZ29sZCkiIG9wYWNpdHk9IjAuODUiLz4KICA8cmVjdCB4PSIzNiIgeT0iNzciIHdpZHRoPSI3IiBoZWlnaHQ9IjI2IiByeD0iMyIgZmlsbD0idXJsKCNwdXJwbGUpIiBvcGFjaXR5PSIwLjc1Ii8+CiAgPHJlY3QgeD0iNDUiIHk9IjU4IiB3aWR0aD0iNyIgaGVpZ2h0PSI2NCIgcng9IjMiIGZpbGw9InVybCgjZ29sZCkiIG9wYWNpdHk9IjAuODUiLz4KICA8cmVjdCB4PSI1NCIgeT0iNzQiIHdpZHRoPSI3IiBoZWlnaHQ9IjMyIiByeD0iMyIgZmlsbD0idXJsKCNwdXJwbGUpIiBvcGFjaXR5PSIwLjc1Ii8+CiAgPHJlY3QgeD0iMTE5IiB5PSI3NCIgd2lkdGg9IjciIGhlaWdodD0iMzIiIHJ4PSIzIiBmaWxsPSJ1cmwoI3B1cnBsZSkiIG9wYWNpdHk9IjAuNzUiLz4KICA8cmVjdCB4PSIxMjgiIHk9IjU4IiB3aWR0aD0iNyIgaGVpZ2h0PSI2NCIgcng9IjMiIGZpbGw9InVybCgjZ29sZCkiIG9wYWNpdHk9IjAuODUiLz4KICA8cmVjdCB4PSIxMzciIHk9Ijc3IiB3aWR0aD0iNyIgaGVpZ2h0PSIyNiIgcng9IjMiIGZpbGw9InVybCgjcHVycGxlKSIgb3BhY2l0eT0iMC43NSIvPgogIDxyZWN0IHg9IjE0NiIgeT0iNjgiIHdpZHRoPSI3IiBoZWlnaHQ9IjQ0IiByeD0iMyIgZmlsbD0idXJsKCNnb2xkKSIgb3BhY2l0eT0iMC44NSIvPgogIDxyZWN0IHg9IjE1NSIgeT0iODIiIHdpZHRoPSI3IiBoZWlnaHQ9IjE2IiByeD0iMyIgZmlsbD0idXJsKCNwdXJwbGUpIiBvcGFjaXR5PSIwLjc1Ii8+CiAgPHRleHQgeD0iOTAiIHk9IjgyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjM2IiBmaWxsPSJ1cmwoI2dvbGQpIj7wn5GRPC90ZXh0PgogIDx0ZXh0IHg9IjkwIiB5PSIxMzAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtc2l6ZT0iNTIiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc3R5bGU9Iml0YWxpYyIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZpbGw9InVybCgjZ29sZCkiPktMPC90ZXh0PgogIDxlbGxpcHNlIGN4PSI5MCIgY3k9IjMwIiByeD0iNTUiIHJ5PSIxOCIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuMDYiLz4KPC9zdmc+">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMTgwIDE4MCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyQTFBMDgiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMEEwNjA0Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJnb2xkIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGMENDNkEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiNENEFGMzciLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQTA3ODIwIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJwdXJwbGUiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0IwOTBGRiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3QjVGRDQiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iNDAiIGZpbGw9InVybCgjYmcpIi8+CiAgPHJlY3QgeD0iNCIgeT0iNCIgd2lkdGg9IjE3MiIgaGVpZ2h0PSIxNzIiIHJ4PSIzNyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOEI2OTE0IiBzdHJva2Utd2lkdGg9IjUiLz4KICA8cmVjdCB4PSIxMSIgeT0iMTEiIHdpZHRoPSIxNTgiIGhlaWdodD0iMTU4IiByeD0iMzIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzVBNDAxMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPHJlY3QgeD0iMTQiIHk9IjE0IiB3aWR0aD0iMTUyIiBoZWlnaHQ9IjE1MiIgcng9IjI5IiBmaWxsPSJub25uZSIgc3Ryb2tlPSIjRDRBRjM3IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWRhc2hhcnJheT0iNSw0IiBvcGFjaXR5PSIwLjU1Ii8+CiAgPHJlY3QgeD0iMTgiIHk9IjgyIiB3aWR0aD0iNyIgaGVpZ2h0PSIxNiIgcng9IjMiIGZpbGw9InVybCgjcHVycGxlKSIgb3BhY2l0eT0iMC43NSIvPgogIDxyZWN0IHg9IjI3IiB5PSI2OCIgd2lkdGg9IjciIGhlaWdodD0iNDQiIHJ4PSIzIiBmaWxsPSJ1cmwoI2dvbGQpIiBvcGFjaXR5PSIwLjg1Ii8+CiAgPHJlY3QgeD0iMzYiIHk9Ijc3IiB3aWR0aD0iNyIgaGVpZ2h0PSIyNiIgcng9IjMiIGZpbGw9InVybCgjcHVycGxlKSIgb3BhY2l0eT0iMC43NSIvPgogIDxyZWN0IHg9IjQ1IiB5PSI1OCIgd2lkdGg9IjciIGhlaWdodD0iNjQiIHJ4PSIzIiBmaWxsPSJ1cmwoI2dvbGQpIiBvcGFjaXR5PSIwLjg1Ii8+CiAgPHJlY3QgeD0iNTQiIHk9Ijc0IiB3aWR0aD0iNyIgaGVpZ2h0PSIzMiIgcng9IjMiIGZpbGw9InVybCgjcHVycGxlKSIgb3BhY2l0eT0iMC43NSIvPgogIDxyZWN0IHg9IjExOSIgeT0iNzQiIHdpZHRoPSI3IiBoZWlnaHQ9IjMyIiByeD0iMyIgZmlsbD0idXJsKCNwdXJwbGUpIiBvcGFjaXR5PSIwLjc1Ii8+CiAgPHJlY3QgeD0iMTI4IiB5PSI1OCIgd2lkdGg9IjciIGhlaWdodD0iNjQiIHJ4PSIzIiBmaWxsPSJ1cmwoI2dvbGQpIiBvcGFjaXR5PSIwLjg1Ii8+CiAgPHJlY3QgeD0iMTM3IiB5PSI3NyIgd2lkdGg9IjciIGhlaWdodD0iMjYiIHJ4PSIzIiBmaWxsPSJ1cmwoI3B1cnBsZSkiIG9wYWNpdHk9IjAuNzUiLz4KICA8cmVjdCB4PSIxNDYiIHk9IjY4IiB3aWR0aD0iNyIgaGVpZ2h0PSI0NCIgcng9IjMiIGZpbGw9InVybCgjZ29sZCkiIG9wYWNpdHk9IjAuODUiLz4KICA8cmVjdCB4PSIxNTUiIHk9IjgyIiB3aWR0aD0iNyIgaGVpZ2h0PSIxNiIgcng9IjMiIGZpbGw9InVybCgjcHVycGxlKSIgb3BhY2l0eT0iMC43NSIvPgogIDx0ZXh0IHg9IjkwIiB5PSI4MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIzNiIgZmlsbD0idXJsKCNnb2xkKSI+8J+RkTwvdGV4dD4KICA8dGV4dCB4PSI5MCIgeT0iMTMwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjUyIiBmb250LXdlaWdodD0iOTAwIiBmb250LXN0eWxlPSJpdGFsaWMiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmaWxsPSJ1cmwoI2dvbGQpIj5LTDwvdGV4dD4KPC9zdmc+">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KaraLog">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { overflow:hidden; height:100vh; }
+#root { height:100vh; }
+::-webkit-scrollbar { display:none; }
+input,textarea,button { font-family:inherit; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.page-enter { animation:fadeIn 0.2s ease; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+// ====== STORAGE ======
+const STORAGE_KEY = "karalog_v2";
+const THEME_KEY = "karalog_theme";
+
+const defaultData = {
+  user: { name: "KaraLogユーザー" },
+  sessions: [
+    { id:"s1", date:"2026-06-12", memo:"友達と3人でカラオケ！声の調子が良くて楽しかった♪サビの高音も安定してた気がする！",
+      songs:[
+        {id:"sg1",title:"残酷な天使のテーゼ",artist:"高橋洋子",score:93.67,machine:"JOYSOUND MAX GO",isBest:true,favorite:true,tags:["音程","安定感"]},
+        {id:"sg2",title:"恋におちて -Fall in love-",artist:"小林明子",score:91.24,machine:"JOYSOUND MAX GO",isBest:false,favorite:false,tags:["表現力"]},
+        {id:"sg3",title:"世界に一つだけの花",artist:"SMAP",score:88.90,machine:"JOYSOUND MAX GO",isBest:false,favorite:true,tags:["リズム"]},
+      ]},
+    { id:"s2", date:"2026-06-05", memo:"一人カラオケ。じっくり練習できた。バラード系のビブラートを意識して。",
+      songs:[
+        {id:"sg4",title:"糸",artist:"中島みゆき",score:92.11,machine:"DAM",isBest:false,favorite:true,tags:["表現力","安定感"]},
+        {id:"sg5",title:"残酷な天使のテーゼ",artist:"高橋洋子",score:91.24,machine:"JOYSOUND MAX GO",isBest:false,favorite:true,tags:["音程"]},
+      ]},
+    { id:"s3", date:"2026-05-21", memo:"久しぶりの大人数！喉を開くイメージで歌ったら高評価が出た。",
+      songs:[
+        {id:"sg6",title:"First Love",artist:"宇多田ヒカル",score:90.11,machine:"JOYSOUND MAX GO",isBest:false,favorite:false,tags:[]},
+        {id:"sg7",title:"カブトムシ",artist:"aiko",score:89.33,machine:"DAM",isBest:false,favorite:true,tags:["表現力"]},
+      ]},
+    { id:"s4", date:"2026-05-10", memo:"練習回。高音の安定感を重点的に確認した。",
+      songs:[
+        {id:"sg8",title:"残酷な天使のテーゼ",artist:"高橋洋子",score:88.45,machine:"JOYSOUND MAX GO",isBest:false,favorite:false,tags:[]},
+        {id:"sg9",title:"CAN YOU CELEBRATE?",artist:"安室奈美恵",score:90.51,machine:"JOYSOUND MAX GO",isBest:false,favorite:true,tags:["音程","表現力"]},
+      ]},
+  ]
+};
+
+function loadData() { try { const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):defaultData; } catch{return defaultData;} }
+function saveData(d) { try{localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}catch{} }
+
+// ====== THEMES ======
+const THEMES = {
+  note: {
+    id:"note", label:"📒 Note", desc:"クラフト紙・温かみ",
+    bg:"#F5F0E8", bgMid:"#EDE7D6", bgCard:"#FFFDF7",
+    border:"rgba(160,130,80,0.25)", borderStrong:"rgba(160,130,80,0.5)",
+    text:"#2C2416", textMid:"#6B5B3E", textDim:"#A08060",
+    accent:"#8B5E3C", accentLight:"#C4956A", accentDim:"rgba(139,94,60,0.12)",
+    sub:"#6B7FA8", subLight:"#8B9FC8", subDim:"rgba(107,127,168,0.15)",
+    good:"#5B8C5A", bad:"#C0584A",
+    navBg:"#EDE7D6", navBorder:"rgba(160,130,80,0.3)",
+    cardShadow:"0 2px 8px rgba(100,70,30,0.12)",
+    paperBg:"#FFFDF7", paperText:"#2C2416",
+    inputBg:"#F0EBE0",
+    ringColor:"#C4956A", ringDark:"#8B5E3C",
+  },
+  dark: {
+    id:"dark", label:"🌙 Dark", desc:"夜でも見やすい",
+    bg:"#090B1A", bgMid:"#0E1128", bgCard:"linear-gradient(145deg,#141730,#0C0E22)",
+    border:"rgba(163,134,62,0.25)", borderStrong:"rgba(163,134,62,0.5)",
+    text:"#F0EEF8", textMid:"#A0A8C8", textDim:"#6070A0",
+    accent:"#D4AF37", accentLight:"#F0CC6A", accentDim:"rgba(212,175,55,0.12)",
+    sub:"#7B5FD4", subLight:"#A585F5", subDim:"rgba(107,60,210,0.2)",
+    good:"#4AE4A0", bad:"#E45B5B",
+    navBg:"#080A1A", navBorder:"rgba(163,134,62,0.2)",
+    cardShadow:"0 4px 14px rgba(0,0,0,0.5)",
+    paperBg:"#EFEBD8", paperText:"#3C3527",
+    inputBg:"#080A18",
+    ringColor:"#D4AF37", ringDark:"#8B6914",
+  },
+  simple: {
+    id:"simple", label:"☀️ Simple", desc:"シンプル・ミニマル",
+    bg:"#FFFFFF", bgMid:"#F5F5F7", bgCard:"#FFFFFF",
+    border:"rgba(0,0,0,0.1)", borderStrong:"rgba(0,0,0,0.2)",
+    text:"#1A1A1A", textMid:"#555555", textDim:"#999999",
+    accent:"#1A1A1A", accentLight:"#444444", accentDim:"rgba(0,0,0,0.06)",
+    sub:"#5856D6", subLight:"#7978E9", subDim:"rgba(88,86,214,0.1)",
+    good:"#34C759", bad:"#FF3B30",
+    navBg:"#FFFFFF", navBorder:"rgba(0,0,0,0.1)",
+    cardShadow:"0 1px 4px rgba(0,0,0,0.08)",
+    paperBg:"#F5F5F7", paperText:"#1A1A1A",
+    inputBg:"#F5F5F7",
+    ringColor:"#CCCCCC", ringDark:"#999999",
+  }
+};
+
+// ====== RINGS ======
+function Rings({T}) {
+  return (
+    <div style={{position:"absolute",left:5,top:50,bottom:80,width:22,display:"flex",flexDirection:"column",justifyContent:"space-around",alignItems:"center",zIndex:10,pointerEvents:"none"}}>
+      {Array.from({length:10}).map((_,i)=>(
+        <div key={i} style={{position:"relative",width:18,height:14}}>
+          <div style={{position:"absolute",left:10,top:2,width:8,height:10,borderRadius:"50%",background:T.bg}}/>
+          <div style={{position:"absolute",left:0,top:0,width:16,height:14,borderRadius:"50% 0 0 50%",borderLeft:`3px solid ${T.ringColor}`,borderTop:`2px solid ${T.ringColor}`,borderBottom:`2px solid ${T.ringDark}`,boxShadow:"2px 2px 4px rgba(0,0,0,0.2)"}}/>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ====== APP ICON C-1 Premium Leather ======
+function AppIcon({size=40,T}) {
+  return (
+    <div style={{width:size,height:size,borderRadius:size*0.22,background:"linear-gradient(145deg,#1C1008,#0A0604)",flexShrink:0,position:"relative",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 14px rgba(0,0,0,0.7), inset 0 1px 3px rgba(255,220,100,0.15)"}}>
+      <div style={{position:"absolute",inset:0,borderRadius:size*0.22,border:`${size*0.04}px solid #8B6914`,boxShadow:`inset 0 0 0 ${size*0.025}px #5A4010`}}/>
+      <div style={{position:"absolute",inset:size*0.07,borderRadius:size*0.16,border:"1.5px dashed rgba(212,175,55,0.5)"}}/>
+      <div style={{position:"absolute",left:size*0.1,top:"50%",transform:"translateY(-50%)",display:"flex",gap:1.5,alignItems:"center",height:size*0.45,opacity:0.7}}>
+        {[0.35,0.65,0.45,0.8,0.5].map((h,i)=>(
+          <div key={i} style={{width:size*0.03,height:`${h*100}%`,borderRadius:2,background:i===1||i===3?"#D4AF37":"#9B6FF0"}}/>
+        ))}
+      </div>
+      <div style={{position:"absolute",right:size*0.1,top:"50%",transform:"translateY(-50%)",display:"flex",gap:1.5,alignItems:"center",height:size*0.45,opacity:0.7}}>
+        {[0.5,0.8,0.45,0.65,0.35].map((h,i)=>(
+          <div key={i} style={{width:size*0.03,height:`${h*100}%`,borderRadius:2,background:i===1||i===3?"#D4AF37":"#9B6FF0"}}/>
+        ))}
+      </div>
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",zIndex:2,gap:size*0.01}}>
+        <span style={{fontSize:size*0.26,lineHeight:1,filter:"drop-shadow(0 1px 2px rgba(0,0,0,0.8))"}}>👑</span>
+        <span style={{fontSize:size*0.38,fontWeight:900,fontStyle:"italic",fontFamily:"Georgia,serif",lineHeight:1,color:"#D4AF37",textShadow:"0 1px 4px rgba(0,0,0,0.8)"}}>KL</span>
+      </div>
+    </div>
+  );
+}
+
+// ====== TORN PAPER ======
+function TornPaper({children,T}) {
+  return (
+    <div style={{background:T.paperBg,padding:"14px 16px 20px",borderRadius:"4px 4px 0 0",boxShadow:`0 4px 12px rgba(0,0,0,${T.id==="note"?0.1:0.4})`,position:"relative",marginBottom:16,border:`1px solid ${T.border}`}}>
+      <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`repeating-linear-gradient(90deg,rgba(0,0,0,0.04) 0px,rgba(0,0,0,0.04) 1px,transparent 1px,transparent 8px)`}}/>
+      {children}
+      <div style={{position:"absolute",bottom:-7,left:0,right:0,height:8,backgroundImage:`linear-gradient(-45deg,transparent 4px,${T.paperBg} 4px),linear-gradient(45deg,transparent 4px,${T.paperBg} 4px)`,backgroundSize:"8px 8px"}}/>
+    </div>
+  );
+}
+
+// ====== CARD ======
+function Card({children,style={},onClick,T}) {
+  const bg = T.bgCard.startsWith("linear") ? T.bgCard : T.bgCard;
+  return (
+    <div onClick={onClick} style={{background:bg,borderRadius:12,padding:"13px 15px",border:`1px solid ${T.border}`,boxShadow:T.cardShadow,cursor:onClick?"pointer":"default",...style}}>
+      {children}
+    </div>
+  );
+}
+
+// ====== LINE CHART ======
+function LineChart({data,width=220,height=70,T}) {
+  if(!data||data.length<2) return null;
+  const min=Math.min(...data)-1, max=Math.max(...data)+1;
+  const pts=data.map((v,i)=>{const x=(i/(data.length-1))*width;const y=height-((v-min)/(max-min))*height;return[x,y];});
+  const path=pts.map(([x,y],i)=>`${i===0?"M":"L"}${x},${y}`).join(" ");
+  const area=`${path} L${width},${height} L0,${height} Z`;
+  const col=T.sub;
+  return (
+    <svg width={width} height={height} style={{overflow:"visible"}}>
+      <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={col} stopOpacity="0.2"/><stop offset="100%" stopColor={col} stopOpacity="0"/></linearGradient></defs>
+      <path d={area} fill="url(#ag)"/>
+      <path d={path} fill="none" stroke={col} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"/>
+      {pts.map(([x,y],i)=><circle key={i} cx={x} cy={y} r={i===pts.length-1?5:3} fill={i===pts.length-1?T.accent:col} stroke={T.bg} strokeWidth="1.5"/>)}
+    </svg>
+  );
+}
+
+// ====== RADAR ======
+function Radar({data,size=140,T}) {
+  const labels=["音程","安定感","表現力","リズム","ロング"];
+  const vals=data||[82,78,75,80,70];
+  const cx=size/2,cy=size/2,r=size*0.33;
+  const ang=i=>Math.PI*2*i/labels.length-Math.PI/2;
+  const pt=(i,v)=>{const a=ang(i),ratio=v/100;return[cx+r*ratio*Math.cos(a),cy+r*ratio*Math.sin(a)];};
+  const grid=ratio=>labels.map((_,i)=>{const[x,y]=pt(i,ratio*100);return`${x},${y}`;}).join(" ");
+  const dpts=vals.map((v,i)=>pt(i,v)).map(([x,y])=>`${x},${y}`).join(" ");
+  return (
+    <svg width={size} height={size}>
+      {[0.33,0.66,1].map((r,ri)=><polygon key={ri} points={grid(r)} fill="none" stroke={T.border} strokeWidth="0.8"/>)}
+      {labels.map((_,i)=>{const[x2,y2]=pt(i,100);return<line key={i} x1={cx} y1={cy} x2={x2} y2={y2} stroke={T.border} strokeWidth="0.8"/>;} )}
+      <polygon points={dpts} fill={T.subDim} stroke={T.sub} strokeWidth="1.5"/>
+      {vals.map((v,i)=>{const[x,y]=pt(i,v);return<circle key={i} cx={x} cy={y} r="2.5" fill={T.accent}/>;} )}
+      {labels.map((l,i)=>{const[x,y]=pt(i,118);return<text key={i} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fill={T.textDim} fontSize="9">{l}</text>;})}
+    </svg>
+  );
+}
+
+// ====== BOTTOM NAV ======
+function Nav({page,setPage,T}) {
+  const tabs=[{id:"home",label:"ホーム",icon:"🏠"},{id:"calendar",label:"カレンダー",icon:"📅"},{id:"history",label:"記録",icon:"📝"},{id:"analysis",label:"分析",icon:"📊"},{id:"mypage",label:"マイページ",icon:"👤"}];
+  return (
+    <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:T.navBg,borderTop:`1px solid ${T.navBorder}`,display:"flex",zIndex:100,boxShadow:`0 -2px 12px rgba(0,0,0,${T.id==="note"?0.08:0.4})`}}>
+      {tabs.map(t=>(
+        <button key={t.id} onClick={()=>setPage(t.id)} style={{flex:1,padding:"11px 0 13px",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+          <span style={{fontSize:19,filter:page===t.id?"none":"grayscale(1) opacity(0.45)"}}>{t.icon}</span>
+          <span style={{fontSize:9.5,fontWeight:page===t.id?700:400,color:page===t.id?T.accent:T.textDim}}>{t.label}</span>
+          {page===t.id&&<div style={{width:18,height:2,background:T.accent,borderRadius:1}}/>}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ====== SECTION LABEL ======
+function SectionLabel({children,T}) {
+  return <div style={{fontSize:10,fontWeight:700,color:T.textDim,letterSpacing:2,marginBottom:8,marginTop:4}}>{children}</div>;
+}
+
+// ====== HOME ======
+function Home({data,setPage,setDetailDate,T}) {
+  const all=data.sessions.flatMap(s=>s.songs);
+  const best=all.length?Math.max(...all.map(s=>s.score)):0;
+  const avg=all.length?all.reduce((a,b)=>a+b.score,0)/all.length:0;
+  const thisM=data.sessions.filter(s=>s.date.startsWith("2026-06"));
+  const lastM=data.sessions.filter(s=>s.date.startsWith("2026-05"));
+  const thisSongs=thisM.flatMap(s=>s.songs);
+  const lastSongs=lastM.flatMap(s=>s.songs);
+  const thisAvg=thisSongs.length?thisSongs.reduce((a,b)=>a+b.score,0)/thisSongs.length:0;
+  const lastAvg=lastSongs.length?lastSongs.reduce((a,b)=>a+b.score,0)/lastSongs.length:0;
+  const diff=(thisAvg-lastAvg).toFixed(1);
+  const recent=data.sessions[0];
+  const target=95;
+  const gap=(target-best).toFixed(1);
+  const scores=[...data.sessions].sort((a,b)=>a.date.localeCompare(b.date)).map(s=>Math.max(...s.songs.map(sg=>sg.score)));
+  const bestUpdates=thisM.filter(s=>s.songs.some(sg=>sg.isBest)).length;
+
+  return (
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      {/* Header */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 0 14px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <AppIcon size={42} T={T}/>
+          <div>
+            <div style={{fontSize:20,fontWeight:900,color:T.accent,fontFamily:"Georgia,serif"}}>KaraLog</div>
+            <div style={{fontSize:10,color:T.textDim}}>歌声の成長を残すノート</div>
+          </div>
+        </div>
+        <button onClick={()=>setPage("record")} style={{background:T.accent,border:"none",borderRadius:20,padding:"7px 15px",color:"#FFF",fontSize:11,fontWeight:700,cursor:"pointer"}}>＋ 入力</button>
+      </div>
+
+      {/* 今日の歌声ノート */}
+      <SectionLabel T={T}>TODAY'S NOTE</SectionLabel>
+      <TornPaper T={T}>
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+          <span style={{fontSize:11,fontWeight:700,color:T.paperText,opacity:0.6}}>📖 今日の歌声ノート</span>
+          <span style={{fontSize:10,color:T.paperText,opacity:0.4}}>{recent?.date}</span>
+        </div>
+        <div style={{fontSize:13,color:T.paperText,lineHeight:1.9,fontWeight:600,fontStyle:"italic"}}>
+          「{recent?.memo||"今日も楽しく歌えました！"}」
+        </div>
+        <div style={{marginTop:10,paddingTop:8,borderTop:`1px solid rgba(0,0,0,0.08)`,display:"flex",gap:16}}>
+          <span style={{fontSize:10,color:T.paperText,opacity:0.55}}>🎤 {recent?.songs.length}曲</span>
+          <span style={{fontSize:10,color:T.paperText,opacity:0.55}}>最高 {recent?Math.max(...recent.songs.map(s=>s.score)).toFixed(2):"--"}点</span>
+          {recent?.songs.some(s=>s.isBest)&&<span style={{fontSize:10,color:T.accent,opacity:0.8,fontWeight:700}}>✨ ベスト更新！</span>}
+        </div>
+      </TornPaper>
+
+      {/* 最近歌った曲 */}
+      <SectionLabel T={T}>RECENT SONGS</SectionLabel>
+      <Card T={T} onClick={()=>{setDetailDate(recent?.date);setPage("day");}} style={{marginBottom:12}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+          <span style={{fontSize:11,fontWeight:700,color:T.accent}}>🎵 最近の記録</span>
+          <span style={{fontSize:10,color:T.textDim}}>{recent?.date} ›</span>
+        </div>
+        {recent?.songs.map((song,i)=>(
+          <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 0",borderTop:i>0?`1px solid ${T.border}`:"none"}}>
+            <div>
+              <div style={{fontSize:12,color:T.text,fontWeight:500}}>{song.title}</div>
+              <div style={{fontSize:10,color:T.textDim}}>{song.artist}</div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{fontSize:14,fontWeight:800,color:song.isBest?T.accent:T.sub}}>{song.score.toFixed(2)}点</div>
+              {song.isBest&&<div style={{fontSize:9,color:T.accent}}>✨ ベスト</div>}
+            </div>
+          </div>
+        ))}
+      </Card>
+
+      {/* ベスト更新情報 */}
+      <SectionLabel T={T}>GROWTH</SectionLabel>
+      <Card T={T} style={{marginBottom:12}}>
+        <div style={{display:"flex",gap:14,alignItems:"center"}}>
+          <div style={{flex:1}}>
+            <LineChart data={scores} width={170} height={60} T={T}/>
+            <div style={{fontSize:9,color:T.textDim,marginTop:4}}>過去{scores.length}セッション</div>
+          </div>
+          <div style={{minWidth:90}}>
+            <div style={{fontSize:9,color:T.textDim}}>自己ベスト</div>
+            <div style={{fontSize:24,fontWeight:900,color:T.accent,lineHeight:1.2}}>{best.toFixed(2)}</div>
+            <div style={{marginTop:6,background:T.subDim,borderRadius:8,padding:"6px 10px",border:`1px solid ${T.sub}30`}}>
+              <div style={{fontSize:9,color:T.textDim}}>{target}点まで</div>
+              <div style={{fontSize:15,fontWeight:800,color:T.sub}}>あと{gap}点</div>
+            </div>
+            <div style={{marginTop:5,fontSize:10,color:parseFloat(diff)>=0?T.good:T.bad,fontWeight:700}}>
+              {parseFloat(diff)>=0?"▲":"▼"} 先月比 {diff>=0?"+":""}{diff}点
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* 月間サマリー */}
+      <SectionLabel T={T}>THIS MONTH</SectionLabel>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+        {[
+          {label:"今月歌唱",val:`${thisSongs.length}曲`,icon:"🎤",color:T.sub},
+          {label:"先月比",val:`${parseFloat(diff)>=0?"+":""}${diff}点`,icon:"📈",color:parseFloat(diff)>=0?T.good:T.bad},
+          {label:"ベスト更新",val:`${bestUpdates}回`,icon:"⭐",color:T.accent},
+        ].map((item,i)=>(
+          <Card key={i} T={T} style={{padding:"10px 8px",textAlign:"center"}}>
+            <div style={{fontSize:15,marginBottom:3}}>{item.icon}</div>
+            <div style={{fontSize:9,color:T.textDim,marginBottom:3}}>{item.label}</div>
+            <div style={{fontSize:15,fontWeight:800,color:item.color}}>{item.val}</div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ====== CALENDAR ======
+function Calendar({data,setPage,setDetailDate,T}) {
+  const [yr,setYr]=useState(2026);
+  const [mo,setMo]=useState(6);
+  const dim=new Date(yr,mo,0).getDate();
+  const fd=new Date(yr,mo-1,1).getDay();
+  const moStr=`${yr}-${String(mo).padStart(2,"0")}`;
+  const moSessions=data.sessions.filter(s=>s.date.startsWith(moStr));
+  const getS=d=>data.sessions.find(s=>s.date===`${yr}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`);
+
+  return (
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 0 14px"}}>
+        <button onClick={()=>mo===1?(setYr(y=>y-1),setMo(12)):setMo(m=>m-1)} style={{background:"none",border:"none",color:T.accent,fontSize:22,cursor:"pointer"}}>‹</button>
+        <div style={{fontSize:16,fontWeight:800,color:T.accent,fontFamily:"Georgia,serif"}}>📅 {yr}年{mo}月</div>
+        <button onClick={()=>mo===12?(setYr(y=>y+1),setMo(1)):setMo(m=>m+1)} style={{background:"none",border:"none",color:T.accent,fontSize:22,cursor:"pointer"}}>›</button>
+      </div>
+      <Card T={T} style={{marginBottom:14}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",textAlign:"center",marginBottom:10}}>
+          {["日","月","火","水","木","金","土"].map((w,i)=><span key={i} style={{fontSize:10,color:i===0?"#E45B5B":i===6?"#4A90D9":T.textDim,paddingBottom:4}}>{w}</span>)}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4}}>
+          {Array.from({length:fd}).map((_,i)=><div key={`p${i}`}/>)}
+          {Array.from({length:dim},(_,i)=>i+1).map(day=>{
+            const s=getS(day);
+            const ds=`${yr}-${String(mo).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+            const isToday=ds==="2026-06-12";
+            const hasBest=s?.songs.some(sg=>sg.isBest);
+            return (
+              <div key={day} onClick={()=>{if(s){setDetailDate(ds);setPage("day");}}}
+                style={{height:38,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",borderRadius:8,
+                  background:isToday?T.sub:s?T.subDim:"transparent",
+                  border:isToday?`1.5px solid ${T.accent}`:"1px solid transparent",cursor:s?"pointer":"default"}}>
+                <span style={{fontSize:12,color:isToday?"#FFF":s?T.sub:T.text,fontWeight:isToday?700:400}}>{day}</span>
+                {s&&<div style={{width:5,height:5,borderRadius:"50%",background:hasBest?T.accent:T.sub,marginTop:1}}/>}
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+      <SectionLabel T={T}>{mo}月の歌唱記録</SectionLabel>
+      {moSessions.length===0&&<div style={{textAlign:"center",color:T.textDim,padding:32}}>この月の記録はありません</div>}
+      {moSessions.sort((a,b)=>b.date.localeCompare(a.date)).map((s,i)=>(
+        <Card key={i} T={T} onClick={()=>{setDetailDate(s.date);setPage("day");}} style={{marginBottom:8}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <div style={{fontSize:13,fontWeight:700,color:T.accent}}>{s.date.replace(/-/g,".")}</div>
+              <div style={{fontSize:10,color:T.textDim,marginTop:2}}>{s.songs.length}曲 · {s.memo.slice(0,18)}{s.memo.length>18?"…":""}</div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{fontSize:15,fontWeight:800,color:T.text}}>{Math.max(...s.songs.map(sg=>sg.score)).toFixed(2)}点</div>
+              <div style={{fontSize:9,color:T.textDim}}>最高 ›</div>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// ====== DAY ======
+function Day({data,date,setPage,setDetailSong,T}) {
+  const session=data.sessions.find(s=>s.date===date)||data.sessions[0];
+  const dn=["日","月","火","水","木","金","土"][new Date(session.date).getDay()];
+  return (
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:"18px 0 12px"}}>
+        <button onClick={()=>setPage("calendar")} style={{background:"none",border:"none",color:T.accent,fontSize:20,cursor:"pointer"}}>‹</button>
+        <div>
+          <div style={{fontSize:15,fontWeight:700,color:T.accent}}>{session.date.replace(/-/g,".")} ({dn}) 📑</div>
+          <div style={{fontSize:10,color:T.textDim}}>{session.songs.length}曲歌唱</div>
+        </div>
+      </div>
+      <TornPaper T={T}>
+        <div style={{fontSize:10,color:T.paperText,opacity:0.55,marginBottom:6}}>✍️ メモ</div>
+        <div style={{fontSize:13,color:T.paperText,lineHeight:1.9,fontWeight:600}}>{session.memo||"メモなし"}</div>
+        <div style={{marginTop:10,display:"flex",gap:16}}>
+          {[{val:session.songs.length,label:"曲数"},{val:Math.max(...session.songs.map(s=>s.score)).toFixed(2),label:"最高点"},{val:(session.songs.reduce((a,b)=>a+b.score,0)/session.songs.length).toFixed(2),label:"平均点"}].map((item,i)=>(
+            <div key={i} style={{textAlign:"center"}}>
+              <div style={{fontSize:15,fontWeight:800,color:T.paperText}}>{item.val}</div>
+              <div style={{fontSize:9,color:T.paperText,opacity:0.5}}>{item.label}</div>
+            </div>
+          ))}
+        </div>
+      </TornPaper>
+      <SectionLabel T={T}>SONG LIST</SectionLabel>
+      {session.songs.map((song,i)=>(
+        <Card key={i} T={T} onClick={()=>{setDetailSong(song.title);setPage("songdetail");}} style={{marginBottom:8}}>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <div style={{width:26,height:26,borderRadius:"50%",background:T.subDim,border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,color:T.sub,fontWeight:700,flexShrink:0}}>{i+1}</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:600,color:T.text}}>{song.title}</div>
+              <div style={{fontSize:10,color:T.textDim}}>{song.artist} · {song.machine}</div>
+              {song.tags?.length>0&&<div style={{display:"flex",gap:4,marginTop:4}}>{song.tags.map((tag,ti)=><span key={ti} style={{fontSize:8,background:T.subDim,color:T.sub,borderRadius:8,padding:"1px 6px",border:`1px solid ${T.sub}30`}}>{tag}</span>)}</div>}
+            </div>
+            <div style={{textAlign:"right",flexShrink:0}}>
+              <div style={{fontSize:15,fontWeight:800,color:song.isBest?T.accent:T.sub}}>{song.score.toFixed(2)}点</div>
+              {song.isBest&&<div style={{fontSize:9,color:T.accent}}>✨ ベスト</div>}
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// ====== SONG DETAIL ======
+function SongDetail({data,songTitle,setPage,T}) {
+  const [tab,setTab]=useState("history");
+  const instances=data.sessions.flatMap(s=>s.songs.filter(sg=>sg.title===songTitle).map(sg=>({...sg,date:s.date,memo:s.memo}))).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!instances.length) return <div style={{color:T.textDim,padding:32,textAlign:"center"}}>データなし</div>;
+  const best=Math.max(...instances.map(s=>s.score));
+  const avg=instances.reduce((a,b)=>a+b.score,0)/instances.length;
+  const scores=instances.map(s=>s.score).reverse();
+  return (
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:"18px 0 12px"}}>
+        <button onClick={()=>setPage("history")} style={{background:"none",border:"none",color:T.accent,fontSize:20,cursor:"pointer"}}>‹</button>
+        <div style={{flex:1}}>
+          <div style={{fontSize:15,fontWeight:700,color:T.accent}}>{songTitle}</div>
+          <div style={{fontSize:10,color:T.textDim}}>{instances[0].artist} · {instances.length}回歌唱</div>
+        </div>
+      </div>
+      <Card T={T} style={{marginBottom:14,textAlign:"center",background:T.subDim}}>
+        <div style={{fontSize:10,color:T.textDim,marginBottom:4}}>✨ 自己ベスト</div>
+        <div style={{fontSize:38,fontWeight:900,color:T.accent}}>{best.toFixed(2)}<span style={{fontSize:14,color:T.textDim}}>点</span></div>
+        <div style={{display:"flex",justifyContent:"center",gap:24,marginTop:10,marginBottom:12}}>
+          {[{label:"平均",val:avg.toFixed(2)},{label:"歌唱回数",val:`${instances.length}回`},{label:"最終",val:instances[0].date.slice(5).replace("-","/")}].map((item,i)=>(
+            <div key={i}><div style={{fontSize:9,color:T.textDim}}>{item.label}</div><div style={{fontSize:14,fontWeight:700,color:T.text}}>{item.val}</div></div>
+          ))}
+        </div>
+        <div style={{display:"flex",justifyContent:"center"}}><LineChart data={scores} width={240} height={55} T={T}/></div>
+      </Card>
+      <div style={{display:"flex",gap:0,marginBottom:12,background:T.bgMid,borderRadius:12,padding:4}}>
+        {[["history","📅 履歴"],["memo","📝 メモ"]].map(([id,label])=>(
+          <button key={id} onClick={()=>setTab(id)} style={{flex:1,padding:"8px 0",background:tab===id?T.sub:"none",border:"none",borderRadius:8,color:tab===id?"#FFF":T.textDim,cursor:"pointer",fontSize:12,fontWeight:tab===id?700:400}}>{label}</button>
+        ))}
+      </div>
+      {tab==="history"&&<Card T={T}>{instances.map((inst,i)=>(
+        <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:i<instances.length-1?`1px solid ${T.border}`:"none"}}>
+          <div><div style={{fontSize:12,color:T.text}}>{inst.date.replace(/-/g,".")}</div><div style={{fontSize:10,color:T.textDim}}>{inst.machine}</div></div>
+          <div style={{fontSize:14,fontWeight:800,color:inst.isBest?T.accent:T.sub}}>{inst.score.toFixed(2)}点{inst.isBest&&" ✨"}</div>
+        </div>
+      ))}</Card>}
+      {tab==="memo"&&<div>{instances.filter(i=>i.memo).map((inst,i)=>(
+        <Card key={i} T={T} style={{marginBottom:8}}><div style={{fontSize:10,color:T.accent,marginBottom:4}}>{inst.date.replace(/-/g,".")}</div><div style={{fontSize:12,color:T.text,lineHeight:1.7}}>{inst.memo}</div></Card>
+      ))}{instances.every(i=>!i.memo)&&<div style={{color:T.textDim,textAlign:"center",padding:32}}>メモなし</div>}</div>}
+    </div>
+  );
+}
+
+// ====== HISTORY ======
+function History({data,setPage,setDetailDate,setDetailSong,T}) {
+  const grouped={};
+  data.sessions.forEach(s=>{const m=s.date.slice(0,7);if(!grouped[m])grouped[m]=[];grouped[m].push(s);});
+  const mLabels={"2026-06":"6月","2026-05":"5月","2026-04":"4月","2026-03":"3月"};
+  return (
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{padding:"18px 0 14px",fontSize:17,fontWeight:800,color:T.accent,fontFamily:"Georgia,serif"}}>📜 歌唱履歴</div>
+      {Object.entries(grouped).sort(([a],[b])=>b.localeCompare(a)).map(([month,sessions])=>(
+        <div key={month} style={{marginBottom:18}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+            <div style={{background:T.accent,borderRadius:"4px 12px 12px 4px",padding:"4px 14px"}}>
+              <span style={{fontSize:12,fontWeight:800,color:"#FFF"}}>{mLabels[month]||month}</span>
+            </div>
+            <div style={{flex:1,height:1,background:T.border}}/>
+          </div>
+          {sessions.sort((a,b)=>b.date.localeCompare(a.date)).map((session,si)=>(
+            <Card key={si} T={T} style={{marginBottom:8}}>
+              <div onClick={()=>{setDetailDate(session.date);setPage("day");}} style={{display:"flex",justifyContent:"space-between",marginBottom:8,cursor:"pointer",paddingBottom:6,borderBottom:`1px solid ${T.border}`}}>
+                <span style={{fontSize:12,fontWeight:700,color:T.accent}}>{session.date.replace(/-/g,".")}</span>
+                <span style={{fontSize:11,color:T.textDim}}>詳細 ›</span>
+              </div>
+              {session.songs.map((song,i)=>(
+                <div key={i} onClick={()=>{setDetailSong(song.title);setPage("songdetail");}} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",borderTop:i>0?`1px solid ${T.border}`:"none",cursor:"pointer"}}>
+                  <div><span style={{fontSize:12,color:T.text}}>{song.title}</span><span style={{fontSize:10,color:T.textDim,marginLeft:8}}>{song.artist}</span></div>
+                  <span style={{fontSize:13,fontWeight:700,color:song.isBest?T.accent:T.sub}}>{song.score.toFixed(2)}点</span>
+                </div>
+              ))}
+            </Card>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ====== ANALYSIS ======
+function Analysis({data,T}) {
+  const [tab,setTab]=useState("total");
+  const all=data.sessions.flatMap(s=>s.songs);
+  const best=all.length?Math.max(...all.map(s=>s.score)):0;
+  const avg=all.length?all.reduce((a,b)=>a+b.score,0)/all.length:0;
+  const songBests={};
+  all.forEach(s=>{if(!songBests[s.title]||songBests[s.title]<s.score)songBests[s.title]=s.score;});
+  const ranking=Object.entries(songBests).sort(([,a],[,b])=>b-a);
+  const radarVals=[85,80,75,88,72];
+  const radarComments=["高音域が安定しています","声の揺れが少なく安定感◎","感情表現が豊かです","リズム感が向上中","ロングトーンを練習中"];
+  return (
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{padding:"18px 0 14px",fontSize:17,fontWeight:800,color:T.accent,fontFamily:"Georgia,serif"}}>📊 分析ノート</div>
+      <div style={{display:"flex",gap:0,marginBottom:14,background:T.bgMid,borderRadius:12,padding:4}}>
+        {[["total","総合"],["song","曲別"]].map(([id,label])=>(
+          <button key={id} onClick={()=>setTab(id)} style={{flex:1,padding:"8px 0",background:tab===id?T.sub:"none",border:"none",borderRadius:8,color:tab===id?"#FFF":T.textDim,cursor:"pointer",fontSize:12,fontWeight:tab===id?700:400}}>{label}</button>
+        ))}
+      </div>
+      {tab==="total"&&<>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+          <Card T={T} style={{textAlign:"center"}}><div style={{fontSize:9,color:T.textDim}}>自己ベスト</div><div style={{fontSize:26,fontWeight:900,color:T.accent}}>{best.toFixed(2)}</div></Card>
+          <Card T={T} style={{textAlign:"center"}}><div style={{fontSize:9,color:T.textDim}}>総合平均</div><div style={{fontSize:26,fontWeight:900,color:T.text}}>{avg.toFixed(2)}</div></Card>
+        </div>
+        <Card T={T} style={{marginBottom:12}}>
+          <div style={{fontSize:12,fontWeight:700,color:T.accent,marginBottom:10}}>▼ スコア推移</div>
+          <div style={{display:"flex",justifyContent:"center"}}><LineChart data={[87.32,88.45,89.33,90.11,91.24,92.11,93.67]} width={280} height={80} T={T}/></div>
+        </Card>
+        <Card T={T}>
+          <div style={{fontSize:12,fontWeight:700,color:T.accent,marginBottom:10}}>▼ 得意・苦手バランス</div>
+          <div style={{display:"flex",gap:12,alignItems:"center"}}>
+            <Radar data={radarVals} size={145} T={T}/>
+            <div style={{flex:1}}>{["音程","安定感","表現力","リズム","ロング"].map((l,i)=>(
+              <div key={i} style={{marginBottom:7}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}><span style={{fontSize:9,color:T.textDim}}>{l}</span><span style={{fontSize:9,color:T.text}}>{radarVals[i]}</span></div>
+                <div style={{height:3,borderRadius:2,background:T.border}}><div style={{height:"100%",borderRadius:2,background:T.sub,width:`${radarVals[i]}%`}}/></div>
+                <div style={{fontSize:8,color:T.textDim,marginTop:2}}>{radarComments[i]}</div>
+              </div>
+            ))}</div>
+          </div>
+        </Card>
+      </>}
+      {tab==="song"&&<Card T={T}>
+        <div style={{fontSize:12,fontWeight:700,color:T.accent,marginBottom:10}}>🏆 曲別ランキング</div>
+        {ranking.map(([title,score],i)=>(
+          <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:i<ranking.length-1?`1px solid ${T.border}`:"none"}}>
+            <div style={{width:22,textAlign:"center",fontSize:13,fontWeight:700,color:i<3?T.accent:T.textDim}}>{i+1}</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:12,color:T.text}}>{title}</div>
+              <div style={{height:3,borderRadius:2,background:T.border,marginTop:4}}><div style={{height:"100%",borderRadius:2,background:i===0?T.accent:T.sub,width:`${((score-85)/15)*100}%`}}/></div>
+            </div>
+            <div style={{fontSize:13,fontWeight:800,color:i===0?T.accent:T.text}}>{score.toFixed(2)}</div>
+          </div>
+        ))}
+      </Card>}
+    </div>
+  );
+}
+
+// ====== MYPAGE ======
+function MyPage({data,setPage,currentThemeId,setTheme,T}) {
+  const all=data.sessions.flatMap(s=>s.songs);
+  const best=all.length?Math.max(...all.map(s=>s.score)):0;
+  const avg=all.length?all.reduce((a,b)=>a+b.score,0)/all.length:0;
+  const days=new Set(data.sessions.map(s=>s.date)).size;
+  const favs=[...new Map(all.filter(s=>s.favorite).map(s=>[s.title,s])).values()];
+  const badges=[
+    {icon:"🎵",label:"初記録達成",earned:true},{icon:"✨",label:"ベスト更新",earned:true},
+    {icon:"📖",label:"10曲記録",earned:true},{icon:"🔥",label:"連続7日",earned:false},
+    {icon:"⭐",label:"平均90点超",earned:true},{icon:"🏆",label:"95点達成",earned:false},
+  ];
+  return (
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{padding:"18px 0 14px",fontSize:17,fontWeight:800,color:T.accent,fontFamily:"Georgia,serif"}}>👤 プロフィール帳</div>
+      <Card T={T} style={{display:"flex",alignItems:"center",gap:14,marginBottom:14}}>
+        <AppIcon size={52} T={T}/>
+        <div><div style={{fontSize:17,fontWeight:700,color:T.text}}>{data.user.name}</div><div style={{fontSize:11,color:T.accent}}>歌声の成長を記録中 🎵</div><div style={{fontSize:10,color:T.textDim,marginTop:4}}>{data.sessions.length}セッション · {all.length}曲</div></div>
+      </Card>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
+        {[{label:"記録曲数",val:`${all.length}曲`},{label:"平均スコア",val:`${avg.toFixed(1)}点`},{label:"自己ベスト",val:`${best.toFixed(2)}点`,color:T.accent}].map((item,i)=>(
+          <Card key={i} T={T} style={{textAlign:"center",padding:"12px 8px"}}>
+            <div style={{fontSize:9,color:T.textDim,marginBottom:4}}>{item.label}</div>
+            <div style={{fontSize:15,fontWeight:800,color:item.color||T.text}}>{item.val}</div>
+          </Card>
+        ))}
+      </div>
+
+      {/* テーマ切替 */}
+      <SectionLabel T={T}>THEME</SectionLabel>
+      <Card T={T} style={{marginBottom:14}}>
+        <div style={{fontSize:12,fontWeight:700,color:T.accent,marginBottom:10}}>🎨 テーマ切替</div>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {Object.values(THEMES).map(theme=>(
+            <button key={theme.id} onClick={()=>setTheme(theme.id)} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",background:currentThemeId===theme.id?T.subDim:"none",border:`1.5px solid ${currentThemeId===theme.id?T.sub:T.border}`,borderRadius:10,cursor:"pointer",textAlign:"left"}}>
+              <span style={{fontSize:18}}>{theme.label.split(" ")[0]}</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,fontWeight:700,color:T.text}}>{theme.label.split(" ").slice(1).join(" ")}</div>
+                <div style={{fontSize:10,color:T.textDim}}>{theme.desc}</div>
+              </div>
+              {currentThemeId===theme.id&&<span style={{fontSize:16,color:T.accent}}>✓</span>}
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card T={T} style={{marginBottom:14}}>
+        <div style={{fontSize:12,fontWeight:700,color:T.accent,marginBottom:10}}>🎖️ 実績バッジ</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+          {badges.map((b,i)=>(
+            <div key={i} style={{textAlign:"center",padding:"8px 4px",background:b.earned?T.subDim:T.border,borderRadius:10,border:`1px solid ${b.earned?T.sub:T.border}`,opacity:b.earned?1:0.4}}>
+              <div style={{fontSize:20}}>{b.icon}</div>
+              <div style={{fontSize:8,color:b.earned?T.accent:T.textDim,marginTop:3,lineHeight:1.3}}>{b.label}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
+      <Card T={T}>
+        <div style={{fontSize:12,fontWeight:700,color:T.accent,marginBottom:10}}>⭐ お気に入り曲</div>
+        {favs.slice(0,5).map((song,i)=>(
+          <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 0",borderBottom:i<Math.min(favs.length,5)-1?`1px solid ${T.border}`:"none"}}>
+            <div><div style={{fontSize:12,color:T.text}}>{song.title}</div><div style={{fontSize:10,color:T.textDim}}>{song.artist}</div></div>
+            <span style={{color:T.accent,fontSize:16}}>★</span>
+          </div>
+        ))}
+      </Card>
+    </div>
+  );
+}
+
+// ====== RECORD ======
+function Record({data,setData,setPage,T}) {
+  const [date,setDate]=useState(new Date().toISOString().slice(0,10));
+  const [memo,setMemo]=useState("");
+  const [songs,setSongs]=useState([{title:"",artist:"",score:"",machine:"JOYSOUND MAX GO"}]);
+  const [pasteText,setPasteText]=useState("");
+  const [pasteMsg,setPasteMsg]=useState("");
+
+  const addSong=()=>setSongs(p=>[...p,{title:"",artist:"",score:"",machine:"JOYSOUND MAX GO"}]);
+  const upd=(i,k,v)=>setSongs(p=>p.map((s,idx)=>idx===i?{...s,[k]:v}:s));
+
+  const save=()=>{
+    const valid=songs.filter(s=>s.title&&s.score);
+    if(!valid.length)return;
+    const ns={id:`s${Date.now()}`,date,memo,songs:valid.map((s,i)=>({id:`sg${Date.now()}${i}`,title:s.title,artist:s.artist,score:parseFloat(s.score),machine:s.machine,isBest:false,favorite:false,tags:[]}))};
+    const nd={...data,sessions:[ns,...data.sessions]};
+    setData(nd);saveData(nd);setPage("home");
+  };
+
+  // コピペ形式: 曲名|アーティスト|スコア|機種 を1行ずつ
+  const parsePaste=()=>{
+    const lines=pasteText.trim().split("\n").filter(l=>l.trim());
+    const parsed=lines.map(line=>{
+      const parts=line.split("|");
+      return {
+        title:parts[0]?.trim()||"",
+        artist:parts[1]?.trim()||"",
+        score:parts[2]?.trim()||"",
+        machine:parts[3]?.trim()||"JOYSOUND MAX GO"
+      };
+    }).filter(s=>s.title&&s.score);
+    if(parsed.length>0){
+      setSongs(parsed);
+      setPasteMsg(`✅ ${parsed.length}曲を読み込みました！`);
+      setPasteText("");
+      setTimeout(()=>setPasteMsg(""),3000);
+    } else {
+      setPasteMsg("⚠️ 形式が違います。曲名|アーティスト|スコア|機種 の形で入力してください");
+      setTimeout(()=>setPasteMsg(""),4000);
+    }
+  };
+
+  const inp={width:"100%",background:T.inputBg,border:`1px solid ${T.border}`,borderRadius:8,padding:"9px 12px",color:T.text,fontSize:13,outline:"none"};
+
+  return (
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:"18px 0 14px"}}>
+        <button onClick={()=>setPage("home")} style={{background:"none",border:"none",color:T.accent,fontSize:20,cursor:"pointer"}}>‹</button>
+        <div style={{fontSize:15,fontWeight:700,color:T.accent}}>📝 新しい歌唱の記録</div>
+      </div>
+
+      {/* Claudeからコピペ入力 */}
+      <Card T={T} style={{marginBottom:12,border:`1px solid ${T.sub}50`}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.sub,marginBottom:4}}>📋 Claudeからコピペで入力</div>
+        <div style={{fontSize:10,color:T.textDim,marginBottom:8,lineHeight:1.6}}>
+          採点画面の写真をClaudeに送って「KaraLog形式で」と頼むと👇の形式で返してくれます{"\n"}
+          <span style={{color:T.accent,fontWeight:600}}>曲名|アーティスト|スコア|機種</span>
+        </div>
+        <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={3}
+          placeholder={"残酷な天使のテーゼ|高橋洋子|93.67|JOYSOUND MAX GO\n糸|中島みゆき|92.11|DAM"}
+          style={{...inp,resize:"none",fontSize:11,marginBottom:8}}/>
+        <button onClick={parsePaste} style={{width:"100%",padding:"9px",background:T.sub,border:"none",borderRadius:8,color:"#FFF",fontWeight:700,fontSize:12,cursor:"pointer"}}>
+          読み込む
+        </button>
+        {pasteMsg&&<div style={{marginTop:6,fontSize:11,color:T.accent,fontWeight:600,textAlign:"center"}}>{pasteMsg}</div>}
+      </Card>
+
+      <Card T={T} style={{marginBottom:10}}>
+        <div style={{fontSize:11,color:T.textDim,marginBottom:6}}>日付</div>
+        <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={inp}/>
+      </Card>
+      <Card T={T} style={{marginBottom:10}}>
+        <div style={{fontSize:11,color:T.textDim,marginBottom:6}}>メモ・感想</div>
+        <textarea value={memo} onChange={e=>setMemo(e.target.value)} rows={3} placeholder="今日の歌唱の感想を書いてみよう..." style={{...inp,resize:"none"}}/>
+      </Card>
+
+      <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:8}}>🎵 歌唱曲</div>
+      {songs.map((song,i)=>(
+        <Card key={i} T={T} style={{marginBottom:8}}>
+          <div style={{fontSize:10,color:T.accent,marginBottom:8}}>曲 {i+1}</div>
+          {[{label:"曲名",key:"title",p:"残酷な天使のテーゼ"},{label:"アーティスト",key:"artist",p:"高橋洋子"},{label:"スコア",key:"score",p:"93.67",type:"number"}].map(f=>(
+            <div key={f.key} style={{marginBottom:6}}>
+              <div style={{fontSize:10,color:T.textDim,marginBottom:3}}>{f.label}</div>
+              <input type={f.type||"text"} value={song[f.key]} onChange={e=>upd(i,f.key,e.target.value)} placeholder={f.p} style={inp}/>
+            </div>
+          ))}
+        </Card>
+      ))}
+      <button onClick={addSong} style={{width:"100%",padding:10,background:"none",border:`1px dashed ${T.border}`,borderRadius:12,color:T.textDim,cursor:"pointer",marginBottom:12,fontSize:13}}>＋ 曲を追加</button>
+      <button onClick={save} style={{width:"100%",padding:14,background:T.accent,border:"none",borderRadius:12,color:"#FFF",fontWeight:700,fontSize:15,cursor:"pointer"}}>手帳に書き込む ✍️</button>
+    </div>
+  );
+}
+
+// ====== APP ======
+function App() {
+  const [data,setData]=useState(()=>loadData());
+  const [page,setPage]=useState("home");
+  const [detailDate,setDetailDate]=useState("2026-06-12");
+  const [detailSong,setDetailSong]=useState(null);
+  const [themeId,setThemeId]=useState(()=>localStorage.getItem(THEME_KEY)||"note");
+
+  const setTheme=useCallback(id=>{
+    setThemeId(id);
+    localStorage.setItem(THEME_KEY,id);
+  },[]);
+
+  const T=THEMES[themeId]||THEMES.note;
+
+  return (
+    <div style={{maxWidth:430,margin:"0 auto",height:"100vh",display:"flex",flexDirection:"column",background:T.bg,color:T.text,fontFamily:"'Hiragino Sans','Noto Sans JP',sans-serif",position:"relative",overflow:"hidden"}}>
+      <div style={{flex:1,overflowY:"auto"}}>
+        {page==="home"&&<Home data={data} setPage={setPage} setDetailDate={setDetailDate} T={T}/>}
+        {page==="calendar"&&<Calendar data={data} setPage={setPage} setDetailDate={setDetailDate} T={T}/>}
+        {page==="day"&&<Day data={data} date={detailDate} setPage={setPage} setDetailSong={setDetailSong} T={T}/>}
+        {page==="songdetail"&&<SongDetail data={data} songTitle={detailSong} setPage={setPage} T={T}/>}
+        {page==="history"&&<History data={data} setPage={setPage} setDetailDate={setDetailDate} setDetailSong={setDetailSong} T={T}/>}
+        {page==="analysis"&&<Analysis data={data} T={T}/>}
+        {page==="mypage"&&<MyPage data={data} setPage={setPage} currentThemeId={themeId} setTheme={setTheme} T={T}/>}
+        {page==="record"&&<Record data={data} setData={setData} setPage={setPage} T={T}/>}
+      </div>
+      {page!=="record"&&<Nav page={page} setPage={setPage} T={T}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
