@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>KaraLog</title>
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KaraLog">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{overflow:hidden;height:100vh;font-family:'Hiragino Sans','Noto Sans JP',sans-serif}
+#root{height:100vh}
+::-webkit-scrollbar{display:none}
+input,textarea,button,select{font-family:inherit}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page-enter{animation:fadeIn 0.2s ease}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useCallback,useRef}=React;
+
+// ====== STORAGE ======
+const SK="karalog_v3";
+const TK="karalog_theme";
+
+// ====== NOTE NAMES ======
+const NOTES=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+function noteToMidi(n){
+  if(!n)return null;
+  const m=n.match(/^([A-G]#?)(\d)$/);
+  if(!m)return null;
+  return NOTES.indexOf(m[1])+parseInt(m[2])*12;
+}
+function midiToNote(m){
+  if(m==null)return "";
+  return NOTES[m%12]+Math.floor(m/12);
+}
+
+// ====== DEFAULT DATA ======
+const DD={
+  user:{name:"KaraLogユーザー"},
+  records:[],
+  people:["自分","友達1","友達2","友達3"],
+  cur:0
+};
+const DEF_PEOPLE=["自分","友達1","友達2","友達3"];
+function ppl(d){return (d.people&&d.people.length)?d.people:DEF_PEOPLE;}
+function curP(d){return (typeof d.cur==="number"&&d.cur>=0&&d.cur<ppl(d).length)?d.cur:0;}
+function pRecs(d){const c=curP(d);return d.records.filter(r=>(r.person||0)===c);}
+const SHOP_BY_DATE={"2025-12-30":"カラオケレインボー茂原店","2026-01-17":"カラオケレインボー茂原店","2026-01-21":"カラオケレインボー茂原店","2026-01-22":"カラオケレインボー茂原店","2026-02-12":"カラオケレインボー茂原店","2026-03-08":"カラオケレインボー茂原店","2026-03-09":"カラオケレインボー茂原店","2026-06-09":"カラオケレインボー茂原店","2026-06-24":"カラオケレインボー茂原店","2026-07-26":"カラオケCLUB DAM東金店","2026-07-27":"カラオケCLUB DAM東金店","2026-09-10":"カラオケアーサー鎌取店","2026-09-20":"カラオケCLUB DAM東金店","2026-10-03":"カラオケアーサー鎌取店","2026-10-25":"カラオケCLUB DAM東金店"};
+function extractShop(memo){if(!memo)return "";const m=memo.match(/(?:店舗|店名)[:：]\s*([^/／\n]+)/);return m?m[1].trim():"";}
+function shopFor(r){return extractShop(r.memo)||SHOP_BY_DATE[r.date]||"";}
+
+const SAMPLE_SIG=[["残酷な天使のテーゼ",93.67,"2026-06-12"],["恋におちて -Fall in love-",91.24,"2026-06-12"],["糸",92.11,"2026-06-05"],["残酷な天使のテーゼ",91.24,"2026-06-05"],["First Love",90.11,"2026-05-21"],["カブトムシ",89.33,"2026-05-21"]];
+function isSample(r){return SAMPLE_SIG.some(([t,sc,d])=>r.title===t&&r.score===sc&&r.date===d);}
+function load(){try{const r=localStorage.getItem(SK);if(!r)return DD;const d=JSON.parse(r);const before=(d.records||[]).length;d.records=(d.records||[]).filter(x=>!isSample(x));if(!Array.isArray(d.people)||!d.people.length)d.people=["自分","友達1","友達2","友達3"];if(typeof d.cur!=="number"||d.cur<0||d.cur>=d.people.length)d.cur=0;let ch=false;d.records.forEach(r=>{if(r.shop===undefined){const sh=shopFor(r);if(sh){r.shop=sh;ch=true;}}});if(d.records.length!==before||ch){try{localStorage.setItem(SK,JSON.stringify(d));}catch{}}return d;}catch{return DD;}}
+function save(d){try{localStorage.setItem(SK,JSON.stringify(d));}catch{}}
+
+// ====== THEMES ======
+const THEMES={
+  note:{id:"note",label:"📒 Note",bg:"#F5F0E8",bgMid:"#EDE7D6",bgCard:"#FFFDF7",
+    border:"rgba(160,130,80,0.25)",borderStrong:"rgba(160,130,80,0.5)",
+    text:"#2C2416",textMid:"#6B5B3E",textDim:"#A08060",
+    accent:"#8B5E3C",accentLight:"#C4956A",subDim:"rgba(107,127,168,0.12)",
+    sub:"#6B7FA8",subLight:"#8B9FC8",good:"#5B8C5A",bad:"#C0584A",
+    navBg:"#EDE7D6",navBorder:"rgba(160,130,80,0.3)",cardShadow:"0 2px 8px rgba(100,70,30,0.1)",
+    paperBg:"#FFFDF7",paperText:"#2C2416",inputBg:"#F0EBE0",ringColor:"#C4956A",ringDark:"#8B5E3C"},
+  dark:{id:"dark",label:"🌙 Dark",bg:"#090B1A",bgMid:"#0E1128",bgCard:"linear-gradient(145deg,#141730,#0C0E22)",
+    border:"rgba(163,134,62,0.25)",borderStrong:"rgba(163,134,62,0.5)",
+    text:"#F0EEF8",textMid:"#A0A8C8",textDim:"#6070A0",
+    accent:"#D4AF37",accentLight:"#F0CC6A",subDim:"rgba(107,60,210,0.2)",
+    sub:"#7B5FD4",subLight:"#A585F5",good:"#4AE4A0",bad:"#E45B5B",
+    navBg:"#080A1A",navBorder:"rgba(163,134,62,0.2)",cardShadow:"0 4px 14px rgba(0,0,0,0.5)",
+    paperBg:"#EFEBD8",paperText:"#3C3527",inputBg:"#080A18",ringColor:"#D4AF37",ringDark:"#8B6914"},
+  simple:{id:"simple",label:"☀️ Simple",bg:"#FFFFFF",bgMid:"#F5F5F7",bgCard:"#FFFFFF",
+    border:"rgba(0,0,0,0.1)",borderStrong:"rgba(0,0,0,0.2)",
+    text:"#1A1A1A",textMid:"#555",textDim:"#999",
+    accent:"#1A1A1A",accentLight:"#444",subDim:"rgba(88,86,214,0.08)",
+    sub:"#5856D6",subLight:"#7978E9",good:"#34C759",bad:"#FF3B30",
+    navBg:"#FFF",navBorder:"rgba(0,0,0,0.1)",cardShadow:"0 1px 4px rgba(0,0,0,0.08)",
+    paperBg:"#F5F5F7",paperText:"#1A1A1A",inputBg:"#F5F5F7",ringColor:"#CCC",ringDark:"#999"}
+};
+
+// ====== PARSE KARASCORE FORMAT ======
+// KARASCORE|曲名|アーティスト|点数|機種|日付|最低音|最高音|音程%|ビブラート|ロングトーン|抑揚|安定性|リズム|キー|メモ
+function parseKaraScore(text){
+  const lines=text.trim().split("\n").filter(l=>l.trim());
+  const results=[];
+  for(const line of lines){
+    const p=line.split("|");
+    if(p[0]?.trim()==="KARASCORE"&&p.length>=5){
+      results.push({
+        id:`r${Date.now()}${Math.random()}`,
+        title:p[1]?.trim()||"",
+        artist:p[2]?.trim()||"",
+        score:parseFloat(p[3])||0,
+        machine:p[4]?.trim()||"JOYSOUND",
+        date:p[5]?.trim()||new Date().toISOString().slice(0,10),
+        lowNote:p[6]?.trim()||"",
+        highNote:p[7]?.trim()||"",
+        pitchRate:p[8]?parseInt(p[8]):null,
+        vibrato:p[9]?parseFloat(p[9]):null,
+        longTone:p[10]?parseFloat(p[10]):null,
+        expression:p[11]?parseInt(p[11]):null,
+        stability:p[12]?parseInt(p[12]):null,
+        rhythm:p[13]?parseInt(p[13]):null,
+        key:p[14]?parseInt(p[14]):0,
+        memo:p[15]?.trim()||"",
+        favorite:false,
+      });
+    } else if(p.length>=3&&!isNaN(parseFloat(p[2]))){
+      // 簡易形式: 曲名|アーティスト|点数|機種
+      results.push({
+        id:`r${Date.now()}${Math.random()}`,
+        title:p[0]?.trim()||"",artist:p[1]?.trim()||"",
+        score:parseFloat(p[2])||0,machine:p[3]?.trim()||"JOYSOUND",
+        date:new Date().toISOString().slice(0,10),
+        lowNote:"",highNote:"",pitchRate:null,vibrato:null,longTone:null,
+        expression:null,stability:null,rhythm:null,key:0,memo:"",favorite:false,
+      });
+    }
+  }
+  return results;
+}
+
+
+// ====== SONG DATABASE (音域・声質・傾向) ======
+// 音域は公開されている音域データ (muuugic.jp の人気曲リスト等) をもとにした目安。
+// 曲が増えたらここに足すと、おすすめの材料になる。
+const SONG_DB=[
+  {title:"チェリー",artist:"スピッツ",low:"E3",high:"A4",voice:["柔らかい","透明感"],tend:["ミディアム","中音域中心"]},
+  {title:"ドライフラワー",artist:"優里",low:"G3",high:"A4",voice:["ハスキー","柔らかい"],tend:["バラード","ロングトーン多め"]},
+  {title:"少年時代",artist:"井上陽水",low:"E3",high:"F4",voice:["落ち着いた","柔らかい"],tend:["バラード","中音域中心","跳躍少なめ"]},
+  {title:"世界に一つだけの花",artist:"SMAP",low:"E3",high:"F#4",voice:["柔らかい"],tend:["ミディアム","跳躍少なめ"]},
+  {title:"桜坂",artist:"福山雅治",low:"D3",high:"F#4",voice:["ハスキー","落ち着いた"],tend:["バラード","ロングトーン多め"]},
+  {title:"涙そうそう",artist:"BEGIN",low:"D3",high:"F#4",voice:["柔らかい","落ち着いた"],tend:["バラード","ロングトーン多め"]},
+  {title:"3月9日",artist:"レミオロメン",low:"C3",high:"G4",voice:["透明感"],tend:["ミディアム","サビで盛り上がる"]},
+  {title:"奏",artist:"スキマスイッチ",low:"D3",high:"G#4",voice:["柔らかい"],tend:["バラード","ロングトーン多め"]},
+  {title:"小さな恋のうた",artist:"MONGOL800",low:"A#2",high:"G#4",voice:["爽やか"],tend:["アップテンポ","リズム重視"]},
+  {title:"クリスマスソング",artist:"back number",low:"B2",high:"A4",voice:["柔らかい"],tend:["バラード","ロングトーン多め","サビで盛り上がる"]},
+  {title:"全力少年",artist:"スキマスイッチ",low:"D3",high:"A4",voice:["爽やか"],tend:["アップテンポ","サビで盛り上がる"]},
+  {title:"栄光の架橋",artist:"ゆず",low:"B2",high:"A4",voice:["力強い"],tend:["ミディアム","サビで盛り上がる","ロングトーン多め"]},
+  {title:"灰色と青",artist:"米津玄師×菅田将暉",low:"B2",high:"A4",voice:["柔らかい"],tend:["ミディアム","バラード"]},
+  {title:"空も飛べるはず",artist:"スピッツ",low:"G3",high:"A4",voice:["柔らかい","透明感"],tend:["ミディアム","中音域中心"]},
+  {title:"ひまわりの約束",artist:"秦基博",low:"D#3",high:"A#4",voice:["柔らかい"],tend:["バラード","ロングトーン多め"]},
+  {title:"なんでもないや",artist:"RADWIMPS",low:"C#3",high:"A#4",voice:["透明感"],tend:["バラード","ミディアム"]},
+  {title:"糸",artist:"中島みゆき",low:"F3",high:"A#4",voice:["落ち着いた"],tend:["バラード","ロングトーン多め","跳躍少なめ"]},
+  {title:"ハナミズキ",artist:"一青窈",low:"G#3",high:"B4",voice:["透明感","柔らかい"],tend:["バラード","ロングトーン多め"]},
+  {title:"マリーゴールド",artist:"あいみょん",low:"F#3",high:"B4",voice:["柔らかい"],tend:["ミディアム"]},
+  {title:"Story",artist:"AI",low:"D3",high:"C5",voice:["力強い","ハスキー"],tend:["バラード","ロングトーン多め","サビで盛り上がる"]},
+  {title:"カブトムシ",artist:"aiko",low:"G#3",high:"C5",voice:["甘い","透明感"],tend:["ミディアム","バラード"]},
+  {title:"セシル",artist:"浅香唯",low:"G#3",high:"B4",voice:["爽やか","透明感"],tend:["ミディアム"]},
+  {title:"オリビアを聴きながら",artist:"杏里",low:"A#3",high:"C5",voice:["爽やか","透明感"],tend:["バラード","ロングトーン多め"]},
+  {title:"愛のかたまり",artist:"KinKi Kids",low:"C#3",high:"F#4",voice:["柔らかい"],tend:["バラード","ロングトーン多め"]},
+  {title:"さよならの前に",artist:"AAA",low:"F#3",high:"G#4",voice:["爽やか"],tend:["ミディアム","サビで盛り上がる"]},
+  {title:"ロビンソン",artist:"スピッツ",low:"F#3",high:"B4",voice:["柔らかい","爽やか"],tend:["ミディアム"]},
+  {title:"楓",artist:"スピッツ",low:"F3",high:"A#4",voice:["柔らかい"],tend:["バラード","ロングトーン多め"]},
+  {title:"未来へ",artist:"Kiroro",low:"G3",high:"D5",voice:["柔らかい"],tend:["バラード","ロングトーン多め"]},
+];
+function findSong(title){return SONG_DB.find(x=>x.title===title)||null;}
+function nationalAvgOf(r){const m=(r.memo||"").match(/全国平均\s*([0-9.]+)/);return m?parseFloat(m[1]):null;}
+
+// ====== COMPONENTS ======
+function Rings({T}){
+  return(
+    <div style={{position:"absolute",left:5,top:50,bottom:80,width:22,display:"flex",flexDirection:"column",justifyContent:"space-around",alignItems:"center",zIndex:10,pointerEvents:"none"}}>
+      {Array.from({length:10}).map((_,i)=>(
+        <div key={i} style={{position:"relative",width:18,height:14}}>
+          <div style={{position:"absolute",left:10,top:2,width:8,height:10,borderRadius:"50%",background:T.bg}}/>
+          <div style={{position:"absolute",left:0,top:0,width:16,height:14,borderRadius:"50% 0 0 50%",borderLeft:`3px solid ${T.ringColor}`,borderTop:`2px solid ${T.ringColor}`,borderBottom:`2px solid ${T.ringDark}`,boxShadow:"2px 2px 4px rgba(0,0,0,0.2)"}}/>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function KLIcon({size=40}){
+  return(
+    <div style={{width:size,height:size,borderRadius:size*0.22,background:"linear-gradient(145deg,#1C1008,#0A0604)",flexShrink:0,position:"relative",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 14px rgba(0,0,0,0.7)"}}>
+      <div style={{position:"absolute",inset:0,borderRadius:size*0.22,border:`${size*0.04}px solid #8B6914`}}/>
+      <div style={{position:"absolute",inset:size*0.07,borderRadius:size*0.16,border:"1.5px dashed rgba(212,175,55,0.5)"}}/>
+      <div style={{position:"absolute",left:size*0.1,top:"50%",transform:"translateY(-50%)",display:"flex",gap:1.5,alignItems:"center",height:size*0.45,opacity:0.7}}>
+        {[0.35,0.65,0.45,0.8,0.5].map((h,i)=><div key={i} style={{width:size*0.03,height:`${h*100}%`,borderRadius:2,background:i===1||i===3?"#D4AF37":"#9B6FF0"}}/>)}
+      </div>
+      <div style={{position:"absolute",right:size*0.1,top:"50%",transform:"translateY(-50%)",display:"flex",gap:1.5,alignItems:"center",height:size*0.45,opacity:0.7}}>
+        {[0.5,0.8,0.45,0.65,0.35].map((h,i)=><div key={i} style={{width:size*0.03,height:`${h*100}%`,borderRadius:2,background:i===1||i===3?"#D4AF37":"#9B6FF0"}}/>)}
+      </div>
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",zIndex:2}}>
+        <span style={{fontSize:size*0.26,lineHeight:1}}>👑</span>
+        <span style={{fontSize:size*0.38,fontWeight:900,fontStyle:"italic",fontFamily:"Georgia,serif",lineHeight:1,color:"#D4AF37"}}>KL</span>
+      </div>
+    </div>
+  );
+}
+
+function Card({children,style={},onClick,T}){
+  return(
+    <div onClick={onClick} style={{background:T.bgCard,borderRadius:12,padding:"13px 15px",border:`1px solid ${T.border}`,boxShadow:T.cardShadow,cursor:onClick?"pointer":"default",...style}}>
+      {children}
+    </div>
+  );
+}
+
+function TornPaper({children,T}){
+  return(
+    <div style={{background:T.paperBg,padding:"14px 16px 20px",borderRadius:"4px 4px 0 0",boxShadow:`0 4px 12px rgba(0,0,0,0.1)`,position:"relative",marginBottom:16,border:`1px solid ${T.border}`}}>
+      {children}
+      <div style={{position:"absolute",bottom:-7,left:0,right:0,height:8,backgroundImage:`linear-gradient(-45deg,transparent 4px,${T.paperBg} 4px),linear-gradient(45deg,transparent 4px,${T.paperBg} 4px)`,backgroundSize:"8px 8px"}}/>
+    </div>
+  );
+}
+
+function LineChart({data,width=220,height=60,T}){
+  if(!data||data.length<2)return null;
+  const min=Math.min(...data)-1,max=Math.max(...data)+1;
+  const pts=data.map((v,i)=>{const x=(i/(data.length-1))*width;const y=height-((v-min)/(max-min))*height;return[x,y];});
+  const path=pts.map(([x,y],i)=>`${i===0?"M":"L"}${x},${y}`).join(" ");
+  const area=`${path} L${width},${height} L0,${height} Z`;
+  return(
+    <svg width={width} height={height} style={{overflow:"visible"}}>
+      <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={T.sub} stopOpacity="0.2"/><stop offset="100%" stopColor={T.sub} stopOpacity="0"/></linearGradient></defs>
+      <path d={area} fill="url(#ag)"/>
+      <path d={path} fill="none" stroke={T.sub} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"/>
+      {pts.map(([x,y],i)=><circle key={i} cx={x} cy={y} r={i===pts.length-1?5:3} fill={i===pts.length-1?T.accent:T.sub} stroke={T.bg} strokeWidth="1.5"/>)}
+    </svg>
+  );
+}
+
+function Nav({page,setPage,T}){
+  const tabs=[{id:"home",label:"ホーム",icon:"🏠"},{id:"history",label:"履歴",icon:"📝"},{id:"songs",label:"曲別",icon:"🎵"},{id:"analysis",label:"分析",icon:"📊"},{id:"mypage",label:"設定",icon:"⚙️"}];
+  return(
+    <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:430,background:T.navBg,borderTop:`1px solid ${T.navBorder}`,display:"flex",zIndex:100,boxShadow:`0 -2px 12px rgba(0,0,0,0.1)`}}>
+      {tabs.map(t=>(
+        <button key={t.id} onClick={()=>setPage(t.id)} style={{flex:1,padding:"11px 0 13px",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+          <span style={{fontSize:18,filter:page===t.id?"none":"grayscale(1) opacity(0.45)"}}>{t.icon}</span>
+          <span style={{fontSize:9,fontWeight:page===t.id?700:400,color:page===t.id?T.accent:T.textDim}}>{t.label}</span>
+          {page===t.id&&<div style={{width:16,height:2,background:T.accent,borderRadius:1}}/>}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ====== PERSON TABS ======
+function PersonTabs({data,setData,page,setPage,T}){
+  const names=ppl(data);const cur=curP(data);
+  const sw=i=>{if(i===cur)return;const nd={...data,cur:i};setData(nd);save(nd);if(page==="songdetail")setPage("songs");};
+  return(
+    <div style={{display:"flex",gap:6,padding:"12px 16px 2px 30px",flexWrap:"wrap"}}>
+      {names.map((n,i)=>(
+        <button key={i} onClick={()=>sw(i)} style={{padding:"6px 13px",borderRadius:16,border:`1.5px solid ${i===cur?T.accent:T.border}`,background:i===cur?T.accent:"transparent",color:i===cur?"#FFF":T.textMid,fontSize:12,fontWeight:i===cur?800:500,cursor:"pointer"}}>{n||`メンバー${i+1}`}</button>
+      ))}
+    </div>
+  );
+}
+
+// ====== HOME ======
+function Home({data,setPage,setSelRecord,T}){
+  const recs=pRecs(data);
+  const best=recs.length?Math.max(...recs.map(r=>r.score)):0;
+  const avg=recs.length?recs.reduce((a,b)=>a+b.score,0)/recs.length:0;
+  const nowD=new Date();
+  const ymOf=(y,m)=>`${y}-${String(m+1).padStart(2,"0")}`;
+  const thisKey=ymOf(nowD.getFullYear(),nowD.getMonth());
+  const lastDt=new Date(nowD.getFullYear(),nowD.getMonth()-1,1);
+  const lastKey=ymOf(lastDt.getFullYear(),lastDt.getMonth());
+  const thisM=recs.filter(r=>r.date.startsWith(thisKey));
+  const lastM=recs.filter(r=>r.date.startsWith(lastKey));
+  const tAvg=thisM.length?thisM.reduce((a,b)=>a+b.score,0)/thisM.length:0;
+  const lAvg=lastM.length?lastM.reduce((a,b)=>a+b.score,0)/lastM.length:0;
+  const hasDiff=thisM.length>0&&lastM.length>0;
+  const diff=hasDiff?(tAvg-lAvg).toFixed(1):"0.0";
+  const recent=recs[0];
+  const scores=[...recs].sort((a,b)=>a.date.localeCompare(b.date)).map(r=>r.score);
+  const bestRec=recs.reduce((a,b)=>a.score>b.score?a:b,recs[0]);
+
+  return(
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 0 14px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <KLIcon size={44}/>
+          <div>
+            <div style={{fontSize:20,fontWeight:900,color:T.accent,fontFamily:"Georgia,serif"}}>KaraLog</div>
+            <div style={{fontSize:10,color:T.textDim}}>歌唱データ記録・分析</div>
+          </div>
+        </div>
+        <button onClick={()=>setPage("record")} style={{background:T.accent,border:"none",borderRadius:20,padding:"7px 15px",color:"#FFF",fontSize:11,fontWeight:700,cursor:"pointer"}}>＋ 入力</button>
+      </div>
+
+      {recent&&(
+        <TornPaper T={T}>
+          <div style={{fontSize:10,color:T.paperText,opacity:0.6,marginBottom:4}}>📖 最近の記録</div>
+          <div style={{fontSize:13,color:T.paperText,fontWeight:700}}>{recent.title}</div>
+          <div style={{fontSize:11,color:T.paperText,opacity:0.7}}>{recent.artist} · {recent.date}</div>
+          <div style={{fontSize:22,fontWeight:900,color:T.paperText,marginTop:4}}>{recent.score.toFixed(3)}<span style={{fontSize:12,opacity:0.6}}>点</span></div>
+          {recent.memo&&<div style={{fontSize:11,color:T.paperText,opacity:0.7,marginTop:4,fontStyle:"italic"}}>「{recent.memo}」</div>}
+        </TornPaper>
+      )}
+
+      <div style={{fontSize:10,fontWeight:700,color:T.textDim,letterSpacing:2,marginBottom:8}}>STATS</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:10}}>
+        {[{label:"自己ベスト",val:best.toFixed(3),color:T.accent},{label:"総合平均",val:avg.toFixed(2),color:T.text},{label:"総記録数",val:`${recs.length}件`,color:T.text}].map((item,i)=>(
+          <Card key={i} T={T} style={{padding:"10px 8px",textAlign:"center"}}>
+            <div style={{fontSize:9,color:T.textDim,marginBottom:3}}>{item.label}</div>
+            <div style={{fontSize:14,fontWeight:800,color:item.color}}>{item.val}</div>
+          </Card>
+        ))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
+        {[{label:"今月",val:`${thisM.length}件`,icon:"🎤",color:T.sub},{label:"先月比",val:hasDiff?`${parseFloat(diff)>=0?"+":""}${diff}点`:"—",icon:"📈",color:parseFloat(diff)>=0?T.good:T.bad},{label:"お気に入り",val:`${recs.filter(r=>r.favorite).length}曲`,icon:"⭐",color:T.accent}].map((item,i)=>(
+          <Card key={i} T={T} style={{padding:"10px 8px",textAlign:"center"}}>
+            <div style={{fontSize:14,marginBottom:2}}>{item.icon}</div>
+            <div style={{fontSize:9,color:T.textDim,marginBottom:2}}>{item.label}</div>
+            <div style={{fontSize:13,fontWeight:800,color:item.color}}>{item.val}</div>
+          </Card>
+        ))}
+      </div>
+
+      <Card T={T} style={{marginBottom:14}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:10}}>📈 スコア推移</div>
+        <div style={{display:"flex",gap:12,alignItems:"center"}}>
+          <LineChart data={scores} width={170} height={60} T={T}/>
+          <div style={{minWidth:90}}>
+            <div style={{fontSize:9,color:T.textDim}}>自己ベスト</div>
+            <div style={{fontSize:20,fontWeight:900,color:T.accent}}>{best.toFixed(2)}</div>
+            {bestRec&&<div style={{fontSize:9,color:T.textDim,marginTop:2}}>{bestRec.title}</div>}
+          </div>
+        </div>
+      </Card>
+
+      <div style={{fontSize:10,fontWeight:700,color:T.textDim,letterSpacing:2,marginBottom:8}}>RECENT</div>
+      {recs.slice(0,5).map((r,i)=>(
+        <Card key={i} T={T} onClick={()=>{setSelRecord(r.id);setPage("detail");}} style={{marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div style={{flex:1}}>
+            <div style={{fontSize:12,fontWeight:600,color:T.text}}>{r.title}</div>
+            <div style={{fontSize:10,color:T.textDim}}>{r.artist} · {r.date} · {r.machine}</div>
+          </div>
+          <div style={{textAlign:"right",flexShrink:0}}>
+            <div style={{fontSize:14,fontWeight:800,color:T.accent}}>{r.score.toFixed(3)}</div>
+            {r.favorite&&<div style={{fontSize:10,color:T.accent}}>★</div>}
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// ====== HISTORY ======
+function History({data,setData,setPage,setSelRecord,T}){
+  const [search,setSearch]=useState("");
+  const [sort,setSort]=useState("date");
+  const recs=[...pRecs(data)].filter(r=>
+    r.title.includes(search)||r.artist.includes(search)||r.machine.includes(search)
+  ).sort((a,b)=>{
+    if(sort==="score")return b.score-a.score;
+    if(sort==="title")return a.title.localeCompare(b.title);
+    return b.date.localeCompare(a.date);
+  });
+
+  const grouped={};
+  recs.forEach(r=>{const m=r.date.slice(0,7);if(!grouped[m])grouped[m]=[];grouped[m].push(r);});
+
+  return(
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{padding:"18px 0 12px",fontSize:17,fontWeight:800,color:T.accent,fontFamily:"Georgia,serif"}}>📝 歌唱履歴</div>
+
+      <div style={{display:"flex",gap:8,marginBottom:10}}>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="曲名・アーティスト検索..."
+          style={{flex:1,background:T.inputBg,border:`1px solid ${T.border}`,borderRadius:8,padding:"8px 12px",color:T.text,fontSize:12,outline:"none"}}/>
+        <select value={sort} onChange={e=>setSort(e.target.value)}
+          style={{background:T.inputBg,border:`1px solid ${T.border}`,borderRadius:8,padding:"8px",color:T.text,fontSize:11,outline:"none"}}>
+          <option value="date">日付順</option>
+          <option value="score">スコア順</option>
+          <option value="title">曲名順</option>
+        </select>
+      </div>
+
+      {Object.entries(grouped).sort(([a],[b])=>b.localeCompare(a)).map(([month,rs])=>(
+        <div key={month} style={{marginBottom:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+            <div style={{background:T.accent,borderRadius:"4px 12px 12px 4px",padding:"3px 12px"}}>
+              <span style={{fontSize:11,fontWeight:800,color:"#FFF"}}>{month.replace("-","年")}月</span>
+            </div>
+            <div style={{flex:1,height:1,background:T.border}}/>
+          </div>
+          {rs.map((r,i)=>(
+            <Card key={i} T={T} onClick={()=>{setSelRecord(r.id);setPage("detail");}} style={{marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,fontWeight:600,color:T.text}}>{r.title} {r.favorite&&"★"}</div>
+                <div style={{fontSize:10,color:T.textDim}}>{r.artist} · {r.machine}{r.shop?` · ${r.shop}`:""}</div>
+                {r.lowNote&&r.highNote&&<div style={{fontSize:9,color:T.sub,marginTop:2}}>音域: {r.lowNote}〜{r.highNote}{r.pitchRate!=null?` · 音程${r.pitchRate}%`:""}</div>}
+              </div>
+              <div style={{textAlign:"right",flexShrink:0,marginLeft:8}}>
+                <div style={{fontSize:14,fontWeight:800,color:T.accent}}>{r.score.toFixed(3)}</div>
+                <div style={{fontSize:9,color:T.textDim}}>{r.date.slice(5).replace("-","/")} ›</div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ))}
+      {recs.length===0&&<div style={{textAlign:"center",color:T.textDim,padding:40}}>記録がありません</div>}
+    </div>
+  );
+}
+
+// ====== DETAIL ======
+function Detail({data,setData,recordId,setPage,T}){
+  const r=data.records.find(rec=>rec.id===recordId);
+  const [editing,setEditing]=useState(false);
+  const [form,setForm]=useState(r||{});
+
+  if(!r)return<div style={{color:T.textDim,padding:32,textAlign:"center"}}>データなし</div>;
+
+  const upd=(k,v)=>setForm(p=>({...p,[k]:v}));
+
+  const saveEdit=()=>{
+    const nd={...data,records:data.records.map(rec=>rec.id===r.id?{...rec,...form}:rec)};
+    setData(nd);save(nd);setEditing(false);
+  };
+
+  const del=()=>{
+    if(!confirm(`「${r.title}」を削除しますか？`))return;
+    const nd={...data,records:data.records.filter(rec=>rec.id!==r.id)};
+    setData(nd);save(nd);setPage("history");
+  };
+
+  const toggleFav=()=>{
+    const nd={...data,records:data.records.map(rec=>rec.id===r.id?{...rec,favorite:!rec.favorite}:rec)};
+    setData(nd);save(nd);
+  };
+
+  const inp={width:"100%",background:T.inputBg,border:`1px solid ${T.border}`,borderRadius:8,padding:"7px 10px",color:T.text,fontSize:12,outline:"none",marginTop:3};
+
+  const Field=({label,val,k,type="text"})=>(
+    <div style={{marginBottom:8}}>
+      <div style={{fontSize:9,color:T.textDim}}>{label}</div>
+      {editing
+        ?<input type={type} value={form[k]??""} onChange={e=>upd(k,type==="number"?parseFloat(e.target.value):e.target.value)} style={inp}/>
+        :<div style={{fontSize:13,color:T.text,fontWeight:500,paddingTop:2}}>{val||"—"}</div>
+      }
+    </div>
+  );
+
+  return(
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{display:"flex",alignItems:"center",gap:8,padding:"18px 0 12px"}}>
+        <button onClick={()=>setPage("history")} style={{background:"none",border:"none",color:T.accent,fontSize:20,cursor:"pointer"}}>‹</button>
+        <div style={{flex:1}}>
+          <div style={{fontSize:15,fontWeight:700,color:T.accent}}>{r.title}</div>
+          <div style={{fontSize:10,color:T.textDim}}>{r.artist} · {r.date}</div>
+        </div>
+        <button onClick={toggleFav} style={{background:"none",border:"none",fontSize:20,cursor:"pointer"}}>{r.favorite?"★":"☆"}</button>
+        <button onClick={()=>setEditing(!editing)} style={{background:editing?T.sub:T.accent,border:"none",borderRadius:8,padding:"5px 10px",color:"#FFF",fontSize:11,cursor:"pointer"}}>{editing?"キャンセル":"編集"}</button>
+      </div>
+
+      {/* スコアヒーロー */}
+      <Card T={T} style={{marginBottom:12,textAlign:"center",background:T.subDim}}>
+        <div style={{fontSize:10,color:T.textDim,marginBottom:4}}>{r.machine} · {r.date} · {ppl(data)[r.person||0]||`メンバー${(r.person||0)+1}`}</div>
+        <div style={{fontSize:40,fontWeight:900,color:T.accent}}>{r.score.toFixed(3)}<span style={{fontSize:14,color:T.textDim}}>点</span></div>
+      </Card>
+
+      {/* 基本情報 */}
+      <Card T={T} style={{marginBottom:10}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:8}}>基本情報</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          <Field label="曲名" val={r.title} k="title"/>
+          <Field label="アーティスト" val={r.artist} k="artist"/>
+          <Field label="スコア" val={`${r.score.toFixed(3)}点`} k="score" type="number"/>
+          <Field label="機種" val={r.machine} k="machine"/>
+          <Field label="店舗" val={r.shop||""} k="shop"/>
+          <Field label="歌唱日" val={r.date} k="date" type="date"/>
+          <Field label="キー変更" val={r.key!=null?`${r.key>=0?"+":""}${r.key}`:""} k="key" type="number"/>
+          <div style={{marginBottom:8}}>
+            <div style={{fontSize:9,color:T.textDim}}>記録の持ち主</div>
+            {editing
+              ?<select value={form.person||0} onChange={e=>upd("person",parseInt(e.target.value))} style={inp}>{ppl(data).map((n,i)=><option key={i} value={i}>{n||`メンバー${i+1}`}</option>)}</select>
+              :<div style={{fontSize:13,color:T.text,fontWeight:500,paddingTop:2}}>{ppl(data)[r.person||0]||`メンバー${(r.person||0)+1}`}</div>
+            }
+          </div>
+        </div>
+      </Card>
+
+      {/* 音域 */}
+      <Card T={T} style={{marginBottom:10}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:8}}>🎵 音域データ</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          <Field label="最低音" val={r.lowNote} k="lowNote"/>
+          <Field label="最高音" val={r.highNote} k="highNote"/>
+          <Field label="音程正確率" val={r.pitchRate!=null?`${r.pitchRate}%`:""} k="pitchRate" type="number"/>
+        </div>
+        {r.lowNote&&r.highNote&&(()=>{
+          const lo=noteToMidi(r.lowNote),hi=noteToMidi(r.highNote);
+          if(lo&&hi)return<div style={{fontSize:10,color:T.sub,marginTop:6}}>音域幅: {hi-lo}半音（約{((hi-lo)/12).toFixed(1)}オクターブ）</div>;
+        })()}
+      </Card>
+
+      {/* 採点詳細 */}
+      <Card T={T} style={{marginBottom:10}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:8}}>📊 採点詳細</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          <Field label="ビブラート(秒)" val={r.vibrato!=null?r.vibrato.toFixed(2):""} k="vibrato" type="number"/>
+          <Field label="ロングトーン(秒)" val={r.longTone!=null?r.longTone.toFixed(2):""} k="longTone" type="number"/>
+          <Field label="抑揚" val={r.expression!=null?`${r.expression}点`:""} k="expression" type="number"/>
+          <Field label="安定性" val={r.stability!=null?`${r.stability}点`:""} k="stability" type="number"/>
+          <Field label="リズム" val={r.rhythm!=null?`${r.rhythm}点`:""} k="rhythm" type="number"/>
+        </div>
+        {/* バー表示 */}
+        {!editing&&[{label:"音程",val:r.pitchRate},{label:"抑揚",val:r.expression},{label:"安定性",val:r.stability},{label:"リズム",val:r.rhythm}].map((item,i)=>item.val!=null&&(
+          <div key={i} style={{marginTop:6}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+              <span style={{fontSize:9,color:T.textDim}}>{item.label}</span>
+              <span style={{fontSize:9,color:T.text}}>{item.val}</span>
+            </div>
+            <div style={{height:4,borderRadius:2,background:T.border}}>
+              <div style={{height:"100%",borderRadius:2,background:T.sub,width:`${item.val}%`}}/>
+            </div>
+          </div>
+        ))}
+      </Card>
+
+      {/* メモ */}
+      <Card T={T} style={{marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:6}}>📝 メモ</div>
+        {editing
+          ?<textarea value={form.memo||""} onChange={e=>upd("memo",e.target.value)} rows={3} style={{...inp,resize:"none"}}/>
+          :<div style={{fontSize:12,color:T.text,lineHeight:1.7}}>{r.memo||"メモなし"}</div>
+        }
+      </Card>
+
+      {editing&&(
+        <button onClick={saveEdit} style={{width:"100%",padding:14,background:T.accent,border:"none",borderRadius:12,color:"#FFF",fontWeight:700,fontSize:15,cursor:"pointer",marginBottom:10}}>保存する</button>
+      )}
+      <button onClick={del} style={{width:"100%",padding:12,background:"none",border:`1px solid ${T.bad}`,borderRadius:12,color:T.bad,fontWeight:600,fontSize:13,cursor:"pointer"}}>この記録を削除</button>
+    </div>
+  );
+}
+
+// ====== SONGS (曲別) ======
+function Songs({data,setPage,setSelSong,T}){
+  const [search,setSearch]=useState("");
+  const songMap={};
+  pRecs(data).forEach(r=>{
+    if(!songMap[r.title])songMap[r.title]={title:r.title,artist:r.artist,records:[]};
+    songMap[r.title].records.push(r);
+  });
+  const songs=Object.values(songMap).filter(s=>s.title.includes(search)||s.artist.includes(search))
+    .sort((a,b)=>Math.max(...b.records.map(r=>r.score))-Math.max(...a.records.map(r=>r.score)));
+
+  return(
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{padding:"18px 0 12px",fontSize:17,fontWeight:800,color:T.accent,fontFamily:"Georgia,serif"}}>🎵 曲別記録</div>
+      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="曲名・アーティスト検索..."
+        style={{width:"100%",background:T.inputBg,border:`1px solid ${T.border}`,borderRadius:8,padding:"8px 12px",color:T.text,fontSize:12,outline:"none",marginBottom:12}}/>
+
+      {songs.map((song,i)=>{
+        const best=Math.max(...song.records.map(r=>r.score));
+        const avg=song.records.reduce((a,b)=>a+b.score,0)/song.records.length;
+        const scores=song.records.sort((a,b)=>a.date.localeCompare(b.date)).map(r=>r.score);
+        const hasFav=song.records.some(r=>r.favorite);
+        return(
+          <Card key={i} T={T} onClick={()=>{setSelSong(song.title);setPage("songdetail");}} style={{marginBottom:8}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:700,color:T.text}}>{song.title} {hasFav&&"★"}</div>
+                <div style={{fontSize:10,color:T.textDim}}>{song.artist} · {song.records.length}回歌唱</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:16,fontWeight:900,color:T.accent}}>{best.toFixed(3)}</div>
+                <div style={{fontSize:9,color:T.textDim}}>平均 {avg.toFixed(2)}</div>
+              </div>
+            </div>
+            {scores.length>=2&&(
+              <div style={{marginTop:8}}>
+                <LineChart data={scores} width={280} height={35} T={T}/>
+              </div>
+            )}
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+// ====== SONG DETAIL ======
+function SongDetail({data,setData,songTitle,setPage,setSelRecord,T}){
+  const records=data.records.filter(r=>r.title===songTitle&&(r.person||0)===curP(data)).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!records.length)return<div style={{color:T.textDim,padding:32,textAlign:"center"}}>データなし</div>;
+  const best=Math.max(...records.map(r=>r.score));
+  const avg=records.reduce((a,b)=>a+b.score,0)/records.length;
+  const scores=records.map(r=>r.score).reverse();
+  const bestRec=records.find(r=>r.score===best);
+
+  return(
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:"18px 0 12px"}}>
+        <button onClick={()=>setPage("songs")} style={{background:"none",border:"none",color:T.accent,fontSize:20,cursor:"pointer"}}>‹</button>
+        <div>
+          <div style={{fontSize:15,fontWeight:700,color:T.accent}}>{songTitle}</div>
+          <div style={{fontSize:10,color:T.textDim}}>{records[0].artist} · {records.length}回歌唱</div>
+        </div>
+      </div>
+
+      <Card T={T} style={{marginBottom:12,textAlign:"center"}}>
+        <div style={{fontSize:10,color:T.textDim,marginBottom:4}}>自己ベスト</div>
+        <div style={{fontSize:36,fontWeight:900,color:T.accent}}>{best.toFixed(3)}</div>
+        <div style={{display:"flex",justifyContent:"center",gap:24,marginTop:8,marginBottom:12}}>
+          {[{label:"平均",val:avg.toFixed(2)},{label:"歌唱回数",val:`${records.length}回`},{label:"最終",val:records[0].date.slice(5).replace("-","/")}].map((item,i)=>(
+            <div key={i}><div style={{fontSize:9,color:T.textDim}}>{item.label}</div><div style={{fontSize:13,fontWeight:700,color:T.text}}>{item.val}</div></div>
+          ))}
+        </div>
+        <div style={{display:"flex",justifyContent:"center"}}><LineChart data={scores} width={260} height={55} T={T}/></div>
+      </Card>
+
+      {/* 音域情報 */}
+      {bestRec?.lowNote&&bestRec?.highNote&&(
+        <Card T={T} style={{marginBottom:12}}>
+          <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:8}}>🎵 音域（ベスト時）</div>
+          <div style={{display:"flex",gap:16,alignItems:"center"}}>
+            <div style={{textAlign:"center",flex:1}}>
+              <div style={{fontSize:9,color:T.textDim}}>最低音</div>
+              <div style={{fontSize:20,fontWeight:800,color:T.sub}}>{bestRec.lowNote}</div>
+            </div>
+            <div style={{fontSize:18,color:T.textDim}}>〜</div>
+            <div style={{textAlign:"center",flex:1}}>
+              <div style={{fontSize:9,color:T.textDim}}>最高音</div>
+              <div style={{fontSize:20,fontWeight:800,color:T.accent}}>{bestRec.highNote}</div>
+            </div>
+            {(()=>{const lo=noteToMidi(bestRec.lowNote),hi=noteToMidi(bestRec.highNote);return lo&&hi&&(
+              <div style={{textAlign:"center",flex:1}}>
+                <div style={{fontSize:9,color:T.textDim}}>音域幅</div>
+                <div style={{fontSize:16,fontWeight:800,color:T.text}}>{hi-lo}<span style={{fontSize:9}}>半音</span></div>
+              </div>
+            );})()} 
+          </div>
+        </Card>
+      )}
+
+      <div style={{fontSize:10,fontWeight:700,color:T.textDim,letterSpacing:2,marginBottom:8}}>HISTORY</div>
+      {records.map((r,i)=>(
+        <Card key={i} T={T} onClick={()=>{setSelRecord(r.id);setPage("detail");}} style={{marginBottom:6}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <div style={{fontSize:12,color:T.text}}>{r.date} · {r.machine}{r.shop?` · ${r.shop}`:""}</div>
+              {r.lowNote&&<div style={{fontSize:10,color:T.sub}}>{r.lowNote}〜{r.highNote}{r.pitchRate!=null?` · ${r.pitchRate}%`:""}{r.key?` · キー${r.key>=0?"+":""}${r.key}`:""}</div>}
+              {r.memo&&<div style={{fontSize:10,color:T.textDim,fontStyle:"italic"}}>「{r.memo}」</div>}
+            </div>
+            <div style={{fontSize:16,fontWeight:800,color:r.score===best?T.accent:T.text}}>{r.score.toFixed(3)}{r.score===best&&" 👑"}</div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// ====== ANALYSIS ======
+function Analysis({data,setPage,T}){
+  const recs=pRecs(data);
+
+  // 曲別ベスト
+  const bestByTitle={};
+  recs.forEach(r=>{if(!bestByTitle[r.title]||bestByTitle[r.title].score<r.score)bestByTitle[r.title]=r;});
+  const ranking=Object.entries(bestByTitle).map(([t,r])=>[t,r.score]).sort(([,a],[,b])=>b-a).slice(0,8);
+
+  // 得意プロフィール: 音域データのある記録 (曲データベース or 記録の最低音/最高音) から自動集計
+  // 重みは「全国平均との差」(なければ点数) が大きい曲ほど強く反映する
+  const profileSongs=[];
+  Object.values(bestByTitle).forEach(r=>{
+    const db=findSong(r.title);
+    const low=db?db.low:r.lowNote;
+    const high=db?db.high:r.highNote;
+    if(!low||!high)return;
+    const lo=noteToMidi(low),hi=noteToMidi(high);
+    if(lo==null||hi==null)return;
+    const na=nationalAvgOf(r);
+    const weight=Math.max(1,na!=null?(r.score-na):(r.score-88));
+    profileSongs.push({title:r.title,low:lo,high:hi,weight,voice:db?db.voice:[],tend:db?db.tend:[]});
+  });
+  const wSum=profileSongs.reduce((a,b)=>a+b.weight,0)||1;
+  const pLow=profileSongs.length?Math.round(profileSongs.reduce((a,b)=>a+b.low*b.weight,0)/wSum):null;
+  const pHigh=profileSongs.length?Math.round(profileSongs.reduce((a,b)=>a+b.high*b.weight,0)/wSum):null;
+  const pCenter=pLow!=null?(pLow+pHigh)/2:null;
+  const pWidth=pLow!=null?pHigh-pLow:null;
+  const tagCount={};
+  profileSongs.forEach(ps=>{[...ps.voice,...ps.tend].forEach(tg=>{tagCount[tg]=(tagCount[tg]||0)+ps.weight;});});
+  const topTags=Object.entries(tagCount).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([tg])=>tg);
+
+  // おすすめ: まだ歌っていない曲から、音域・声質・傾向が近い順
+  const sungTitles=new Set(recs.map(r=>r.title));
+  let suggestions=[];
+  if(profileSongs.length){
+    suggestions=SONG_DB.filter(c=>!sungTitles.has(c.title)).map(c=>{
+      const cl=noteToMidi(c.low),ch=noteToMidi(c.high);
+      const cc=(cl+ch)/2,cw=ch-cl;
+      const rangeScore=Math.max(0,100-(Math.abs(cc-pCenter)*8+Math.abs(ch-pHigh)*6+Math.abs(cw-pWidth)*4));
+      const shared=[...c.voice,...c.tend].filter(tg=>tagCount[tg]);
+      const tagScore=Math.min(30,shared.length*10);
+      const total=Math.round(rangeScore*0.7+tagScore);
+      const reasons=[];
+      if(ch===pHigh)reasons.push(`高得点曲と同じ最高音${c.high}`);
+      else if(Math.abs(ch-pHigh)<=1)reasons.push(`最高音が近い(${c.high})`);
+      if(Math.abs(cc-pCenter)<=1.5)reasons.push("音域の中心が近い");
+      const shT=c.tend.filter(tg=>tagCount[tg]);if(shT.length)reasons.push(`傾向: ${shT.join("・")}`);
+      const shV=c.voice.filter(tg=>tagCount[tg]);if(shV.length)reasons.push(`声質: ${shV.join("・")}`);
+      return {...c,total,reasons};
+    }).sort((a,b)=>b.total-a.total).slice(0,8);
+  }
+
+  const groupStats=(keyFn)=>{
+    const g={};
+    recs.forEach(r=>{const k=keyFn(r);if(!g[k])g[k]=[];g[k].push(r);});
+    return Object.entries(g).map(([k,rs])=>({k,n:rs.length,avg:rs.reduce((a,b)=>a+b.score,0)/rs.length,best:Math.max(...rs.map(r=>r.score))})).sort((a,b)=>b.n-a.n);
+  };
+  const byMachine=groupStats(r=>r.machine||"不明");
+  const byShop=groupStats(r=>r.shop||"不明");
+
+  return(
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{padding:"18px 0 14px",fontSize:17,fontWeight:800,color:T.accent,fontFamily:"Georgia,serif"}}>📊 分析・音域</div>
+
+      {/* 得意プロフィール */}
+      <Card T={T} style={{marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:10}}>🎵 あなたの得意プロフィール（記録から自動集計）</div>
+        {profileSongs.length?(
+          <>
+            <div style={{display:"flex",gap:12,alignItems:"center",marginBottom:10}}>
+              <div style={{textAlign:"center",flex:1,background:T.subDim,borderRadius:8,padding:"8px"}}>
+                <div style={{fontSize:9,color:T.textDim}}>得意な最低音</div>
+                <div style={{fontSize:22,fontWeight:900,color:T.sub}}>{midiToNote(pLow)}</div>
+              </div>
+              <div style={{fontSize:18,color:T.textDim}}>〜</div>
+              <div style={{textAlign:"center",flex:1,background:T.subDim,borderRadius:8,padding:"8px"}}>
+                <div style={{fontSize:9,color:T.textDim}}>得意な最高音</div>
+                <div style={{fontSize:22,fontWeight:900,color:T.accent}}>{midiToNote(pHigh)}</div>
+              </div>
+              <div style={{textAlign:"center",flex:1,background:T.subDim,borderRadius:8,padding:"8px"}}>
+                <div style={{fontSize:9,color:T.textDim}}>音域幅</div>
+                <div style={{fontSize:22,fontWeight:900,color:T.text}}>{pWidth}<span style={{fontSize:10}}>半音</span></div>
+              </div>
+            </div>
+            {topTags.length>0&&<div style={{fontSize:11,color:T.text,marginBottom:6}}>得意な傾向: {topTags.join(" / ")}</div>}
+            <div style={{fontSize:10,color:T.textDim,lineHeight:1.6}}>集計に使った曲: {profileSongs.map(x=>x.title).join("、")}<br/>記録が増えると自動で更新されます。全国平均との差が大きい曲ほど強く反映しています。</div>
+          </>
+        ):(
+          <div style={{color:T.textDim,fontSize:12,lineHeight:1.7}}>音域データのある曲の記録がまだありません。曲データベースにある曲（チェリー、ドライフラワーなど）で記録が入ると、ここに得意な音域が出ます。記録時に最低音・最高音を入れた曲も集計されます。</div>
+        )}
+      </Card>
+
+      {/* おすすめ曲 */}
+      {suggestions.length>0&&(
+        <Card T={T} style={{marginBottom:12}}>
+          <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:4}}>💡 あなたに似合うおすすめ曲</div>
+          <div style={{fontSize:9,color:T.textDim,marginBottom:8}}>高得点の記録と音域・声質・傾向の近さから自動で選んでいます（まだ歌っていない曲のみ）</div>
+          {suggestions.map((sg,i)=>(
+            <div key={i} style={{padding:"7px 0",borderBottom:i<suggestions.length-1?`1px solid ${T.border}`:"none"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
+                <div style={{fontSize:12,fontWeight:600,color:T.text}}>{sg.title}</div>
+                <div style={{fontSize:11,fontWeight:800,color:T.accent}}>類似度 {sg.total}</div>
+              </div>
+              <div style={{fontSize:10,color:T.textDim}}>{sg.artist} · {sg.low}〜{sg.high}</div>
+              {sg.reasons.length>0&&<div style={{fontSize:9,color:T.sub}}>{sg.reasons.join(" / ")}</div>}
+            </div>
+          ))}
+          <div style={{fontSize:9,color:T.textDim,marginTop:8}}>音域は公開されている音域データをもとにした目安です。</div>
+        </Card>
+      )}
+
+      {/* スコアランキング */}
+      <Card T={T} style={{marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:10}}>🏆 曲別ベストランキング</div>
+        {ranking.map(([title,score],i)=>(
+          <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:i<ranking.length-1?`1px solid ${T.border}`:"none"}}>
+            <div style={{width:20,textAlign:"center",fontSize:12,fontWeight:700,color:i<3?T.accent:T.textDim}}>{i+1}</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:12,color:T.text}}>{title}</div>
+              <div style={{height:3,borderRadius:2,background:T.border,marginTop:3}}>
+                <div style={{height:"100%",borderRadius:2,background:i===0?T.accent:T.sub,width:`${((score-85)/15)*100}%`}}/>
+              </div>
+            </div>
+            <div style={{fontSize:13,fontWeight:800,color:i===0?T.accent:T.text}}>{score.toFixed(3)}</div>
+          </div>
+        ))}
+      </Card>
+
+      {/* 機種別・店舗別 */}
+      <Card T={T} style={{marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:10}}>🎤 機種別</div>
+        {byMachine.map((g,i)=>(
+          <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"6px 0",borderBottom:i<byMachine.length-1?`1px solid ${T.border}`:"none"}}>
+            <span style={{fontSize:12,color:T.text,fontWeight:600}}>{g.k}</span>
+            <span style={{fontSize:11,color:T.textDim}}>{g.n}件 · 平均 <b style={{color:T.text}}>{g.avg.toFixed(2)}</b> · ベスト <b style={{color:T.accent}}>{g.best.toFixed(3)}</b></span>
+          </div>
+        ))}
+      </Card>
+      <Card T={T} style={{marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:10}}>🏠 店舗別</div>
+        {byShop.map((g,i)=>(
+          <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",padding:"6px 0",borderBottom:i<byShop.length-1?`1px solid ${T.border}`:"none"}}>
+            <span style={{fontSize:12,color:T.text,fontWeight:600}}>{g.k}</span>
+            <span style={{fontSize:11,color:T.textDim}}>{g.n}件 · 平均 <b style={{color:T.text}}>{g.avg.toFixed(2)}</b> · ベスト <b style={{color:T.accent}}>{g.best.toFixed(3)}</b></span>
+          </div>
+        ))}
+        <div style={{fontSize:9,color:T.textDim,marginTop:8}}>店舗は日付から自動で振り分けたものを含みます。記録の詳細から変更できます。</div>
+      </Card>
+
+      {/* 総合統計 */}
+      <Card T={T}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:10}}>📈 総合統計</div>
+        {[
+          {label:"総記録数",val:`${recs.length}件`},
+          {label:"自己ベスト",val:recs.length?`${Math.max(...recs.map(r=>r.score)).toFixed(3)}点`:"—"},
+          {label:"総合平均",val:recs.length?`${(recs.reduce((a,b)=>a+b.score,0)/recs.length).toFixed(2)}点`:"—"},
+          {label:"歌唱曲数",val:`${new Set(recs.map(r=>r.title)).size}曲`},
+          {label:"使用機種",val:[...new Set(recs.map(r=>r.machine))].join("・")||"—"},
+        ].map((item,i)=>(
+          <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:i<4?`1px solid ${T.border}`:"none"}}>
+            <span style={{fontSize:11,color:T.textDim}}>{item.label}</span>
+            <span style={{fontSize:11,fontWeight:700,color:T.text}}>{item.val}</span>
+          </div>
+        ))}
+      </Card>
+    </div>
+  );
+}
+
+// ====== MYPAGE / SETTINGS ======
+function MyPage({data,setData,setPage,currentThemeId,setTheme,T}){
+  const [pasteText,setPasteText]=useState("");
+  const [msg,setMsg]=useState("");
+
+  const importData=()=>{
+    const parsed=parseKaraScore(pasteText);
+    if(!parsed.length){setMsg("⚠️ 読み込めるデータがありませんでした");setTimeout(()=>setMsg(""),3000);return;}
+    parsed.forEach(r=>{r.person=curP(data);r.shop=shopFor(r);});
+    const nd={...data,records:[...parsed,...data.records]};
+    setData(nd);save(nd);setPasteText("");
+    setMsg(`✅ ${parsed.length}件を「${ppl(data)[curP(data)]}」にインポートしました`);
+    setTimeout(()=>setMsg(""),3000);
+  };
+
+  const exportData=()=>{
+    const txt=pRecs(data).map(r=>`KARASCORE|${r.title}|${r.artist}|${r.score}|${r.machine}|${r.date}|${r.lowNote||""}|${r.highNote||""}|${r.pitchRate!=null?r.pitchRate:""}|${r.vibrato!=null?r.vibrato:""}|${r.longTone!=null?r.longTone:""}|${r.expression!=null?r.expression:""}|${r.stability!=null?r.stability:""}|${r.rhythm!=null?r.rhythm:""}|${r.key||0}|${r.memo||""}`).join("\n");
+    navigator.clipboard.writeText(txt).then(()=>{setMsg("✅ クリップボードにコピーしました");setTimeout(()=>setMsg(""),3000);});
+  };
+
+  const clearAll=()=>{
+    if(!confirm(`「${ppl(data)[curP(data)]}」の記録を全て削除しますか？この操作は取り消せません`))return;
+    const nd={...data,records:data.records.filter(r=>(r.person||0)!==curP(data))};setData(nd);save(nd);
+    setMsg("🗑️ データを削除しました");setTimeout(()=>setMsg(""),3000);
+  };
+  const updPersonName=(i,v)=>{const names=[...ppl(data)];names[i]=v;const nd={...data,people:names};setData(nd);save(nd);};
+
+  const inp={width:"100%",background:T.inputBg,border:`1px solid ${T.border}`,borderRadius:8,padding:"9px 12px",color:T.text,fontSize:12,outline:"none"};
+
+  return(
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{padding:"18px 0 14px",fontSize:17,fontWeight:800,color:T.accent,fontFamily:"Georgia,serif"}}>⚙️ 設定・データ</div>
+
+      {/* メンバー */}
+      <Card T={T} style={{marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:6}}>👥 メンバー（最大4人）</div>
+        <div style={{fontSize:10,color:T.textDim,marginBottom:8,lineHeight:1.6}}>名前を変えると、画面上のタブにもその名前が出ます。記録・分析・おすすめは人ごとに分かれます。</div>
+        {ppl(data).map((n,i)=>(
+          <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+            <span style={{fontSize:11,color:T.textDim,width:52,flexShrink:0}}>{i===0?"本人":"友達"+i}</span>
+            <input value={n} onChange={e=>updPersonName(i,e.target.value)} placeholder={`メンバー${i+1}`} style={{...inp,flex:1}}/>
+            <span style={{fontSize:10,color:T.textDim,width:44,flexShrink:0,textAlign:"right"}}>{data.records.filter(r=>(r.person||0)===i).length}件</span>
+          </div>
+        ))}
+      </Card>
+
+      {/* テーマ */}
+      <Card T={T} style={{marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:10}}>🎨 テーマ</div>
+        {Object.values(THEMES).map(theme=>(
+          <button key={theme.id} onClick={()=>setTheme(theme.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"10px 12px",background:currentThemeId===theme.id?T.subDim:"none",border:`1.5px solid ${currentThemeId===theme.id?T.sub:T.border}`,borderRadius:10,cursor:"pointer",marginBottom:6,textAlign:"left"}}>
+            <span style={{fontSize:18}}>{theme.label.split(" ")[0]}</span>
+            <div style={{flex:1}}>
+              <div style={{fontSize:12,fontWeight:700,color:T.text}}>{theme.label.split(" ").slice(1).join(" ")}</div>
+              <div style={{fontSize:10,color:T.textDim}}>{theme.desc||""}</div>
+            </div>
+            {currentThemeId===theme.id&&<span style={{color:T.accent}}>✓</span>}
+          </button>
+        ))}
+      </Card>
+
+      {/* インポート */}
+      <Card T={T} style={{marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:6}}>📥 データインポート</div>
+        <div style={{fontSize:10,color:T.textDim,marginBottom:8,lineHeight:1.6}}>
+          KARASCORE形式またはパイプ区切りで貼り付け。取り込み先は現在のタブ「{ppl(data)[curP(data)]}」です{"\n"}
+          <span style={{color:T.accent,fontSize:9}}>KARASCORE|曲名|アーティスト|点数|機種|日付|最低音|最高音|音程%|ビブラート|ロングトーン|抑揚|安定性|リズム|キー|メモ</span>
+        </div>
+        <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={4}
+          placeholder={"KARASCORE|残酷な天使のテーゼ|高橋洋子|93.67|JOYSOUND|2026-06-12|E3|A4|89|14.887|14.887|67|80|75|0|最高！"}
+          style={{...inp,resize:"none",marginBottom:8}}/>
+        <button onClick={importData} style={{width:"100%",padding:"9px",background:T.sub,border:"none",borderRadius:8,color:"#FFF",fontWeight:700,fontSize:12,cursor:"pointer"}}>インポートする</button>
+        {msg&&<div style={{marginTop:6,fontSize:11,color:T.accent,fontWeight:600,textAlign:"center"}}>{msg}</div>}
+      </Card>
+
+      {/* エクスポート */}
+      <Card T={T} style={{marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:6}}>📤 データエクスポート</div>
+        <div style={{fontSize:10,color:T.textDim,marginBottom:8}}>現在表示中の「{ppl(data)[curP(data)]}」の記録をKARASCORE形式でクリップボードにコピーします</div>
+        <button onClick={exportData} style={{width:"100%",padding:"9px",background:T.accent,border:"none",borderRadius:8,color:"#FFF",fontWeight:700,fontSize:12,cursor:"pointer"}}>エクスポート（コピー）</button>
+      </Card>
+
+      {/* 危険ゾーン */}
+      <Card T={T}>
+        <div style={{fontSize:11,fontWeight:700,color:T.bad,marginBottom:6}}>⚠️ データ削除</div>
+        <div style={{fontSize:10,color:T.textDim,marginBottom:8}}>現在表示中の「{ppl(data)[curP(data)]}」の記録だけを削除します。他の人の記録は残ります。この操作は取り消せません。</div>
+        <button onClick={clearAll} style={{width:"100%",padding:"9px",background:"none",border:`1px solid ${T.bad}`,borderRadius:8,color:T.bad,fontWeight:700,fontSize:12,cursor:"pointer"}}>この人の記録を全て削除</button>
+      </Card>
+    </div>
+  );
+}
+
+// ====== RECORD ======
+function Record({data,setData,setPage,T}){
+  const today=new Date().toISOString().slice(0,10);
+  const [personSel,setPersonSel]=useState(curP(data));
+  const [form,setForm]=useState({title:"",artist:"",score:"",machine:"JOYSOUND",shop:"",date:today,lowNote:"",highNote:"",pitchRate:"",vibrato:"",longTone:"",expression:"",stability:"",rhythm:"",key:"0",memo:""});
+  const [pasteText,setPasteText]=useState("");
+  const [pasteMsg,setPasteMsg]=useState("");
+
+  const upd=(k,v)=>setForm(p=>({...p,[k]:v}));
+
+  const save_=()=>{
+    if(!form.title||!form.score)return;
+    const nr={id:`r${Date.now()}`,title:form.title,artist:form.artist,score:parseFloat(form.score),
+      machine:form.machine,shop:form.shop.trim(),date:form.date,lowNote:form.lowNote,highNote:form.highNote,
+      pitchRate:form.pitchRate?parseInt(form.pitchRate):null,vibrato:form.vibrato?parseFloat(form.vibrato):null,
+      longTone:form.longTone?parseFloat(form.longTone):null,expression:form.expression?parseInt(form.expression):null,
+      stability:form.stability?parseInt(form.stability):null,rhythm:form.rhythm?parseInt(form.rhythm):null,
+      key:parseInt(form.key)||0,memo:form.memo,favorite:false,person:personSel};
+    const nd={...data,records:[nr,...data.records]};
+    setData(nd);save(nd);setPage("home");
+  };
+
+  const parsePaste=()=>{
+    const parsed=parseKaraScore(pasteText);
+    if(!parsed.length){setPasteMsg("⚠️ 形式が違います");setTimeout(()=>setPasteMsg(""),3000);return;}
+    parsed.forEach(r=>{r.person=personSel;r.shop=shopFor(r);});
+    const nd={...data,records:[...parsed,...data.records]};
+    setData(nd);save(nd);
+    setPasteMsg(`✅ ${parsed.length}件を記録しました！`);
+    setPasteText("");
+    setTimeout(()=>{setPasteMsg("");setPage("home");},1500);
+  };
+
+  const inp={width:"100%",background:T.inputBg,border:`1px solid ${T.border}`,borderRadius:8,padding:"8px 10px",color:T.text,fontSize:12,outline:"none"};
+  const Label=({children})=><div style={{fontSize:9,color:T.textDim,marginBottom:3}}>{children}</div>;
+
+  return(
+    <div className="page-enter" style={{padding:"0 16px 100px 30px",overflowY:"auto",height:"100%",position:"relative"}}>
+      <Rings T={T}/>
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:"18px 0 14px"}}>
+        <button onClick={()=>setPage("home")} style={{background:"none",border:"none",color:T.accent,fontSize:20,cursor:"pointer"}}>‹</button>
+        <div style={{fontSize:15,fontWeight:700,color:T.accent}}>📝 新しい歌唱の記録</div>
+      </div>
+
+      {/* 誰の記録か */}
+      <Card T={T} style={{marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:8}}>👤 誰の記録？</div>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+          {ppl(data).map((n,i)=>(
+            <button key={i} onClick={()=>setPersonSel(i)} style={{padding:"6px 13px",borderRadius:16,border:`1.5px solid ${personSel===i?T.accent:T.border}`,background:personSel===i?T.accent:"transparent",color:personSel===i?"#FFF":T.textMid,fontSize:12,fontWeight:personSel===i?800:500,cursor:"pointer"}}>{n||`メンバー${i+1}`}</button>
+          ))}
+        </div>
+      </Card>
+
+      {/* コピペ入力 */}
+      <Card T={T} style={{marginBottom:12,border:`1px solid ${T.sub}50`}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.sub,marginBottom:4}}>📋 Claudeからコピペで一括入力</div>
+        <div style={{fontSize:10,color:T.textDim,marginBottom:6,lineHeight:1.6}}>
+          採点画面の写真をClaudeに送って「KaraLog用KARASCORE形式で」と頼むとデータを返してくれます
+        </div>
+        <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={3}
+          placeholder={"KARASCORE|残酷な天使のテーゼ|高橋洋子|93.67|JOYSOUND|2026-06-12|E3|A4|89|14.887|14.887|67|80|75|0|最高！\n曲名|アーティスト|点数|機種 でも可"}
+          style={{...inp,resize:"none",fontSize:10,marginBottom:6}}/>
+        <button onClick={parsePaste} style={{width:"100%",padding:"8px",background:T.sub,border:"none",borderRadius:8,color:"#FFF",fontWeight:700,fontSize:12,cursor:"pointer"}}>読み込む</button>
+        {pasteMsg&&<div style={{marginTop:6,fontSize:11,color:T.accent,fontWeight:600,textAlign:"center"}}>{pasteMsg}</div>}
+      </Card>
+
+      {/* 手動入力 */}
+      <Card T={T} style={{marginBottom:10}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:8}}>✏️ 手動入力</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+          <div><Label>曲名 *</Label><input value={form.title} onChange={e=>upd("title",e.target.value)} placeholder="残酷な天使のテーゼ" style={inp}/></div>
+          <div><Label>アーティスト</Label><input value={form.artist} onChange={e=>upd("artist",e.target.value)} placeholder="高橋洋子" style={inp}/></div>
+          <div><Label>スコア *</Label><input type="number" value={form.score} onChange={e=>upd("score",e.target.value)} placeholder="93.670" style={inp}/></div>
+          <div><Label>機種</Label>
+            <select value={form.machine} onChange={e=>upd("machine",e.target.value)} style={{...inp}}>
+              <option>JOYSOUND</option><option>DAM</option><option>JOYSOUND MAX GO</option><option>LIVE DAM</option>
+            </select>
+          </div>
+          <div><Label>歌唱日</Label><input type="date" value={form.date} onChange={e=>upd("date",e.target.value)} style={inp}/></div>
+          <div><Label>店舗</Label><input value={form.shop} onChange={e=>upd("shop",e.target.value)} placeholder="カラオケCLUB DAM東金店" list="shoplist" style={inp}/><datalist id="shoplist">{[...new Set([...data.records.map(r=>r.shop).filter(Boolean),"カラオケレインボー茂原店","カラオケCLUB DAM東金店","カラオケアーサー鎌取店"])].map((sn,i)=><option key={i} value={sn}/>)}</datalist></div>
+          <div><Label>キー変更</Label><input type="number" value={form.key} onChange={e=>upd("key",e.target.value)} placeholder="0" style={inp}/></div>
+        </div>
+      </Card>
+
+      <Card T={T} style={{marginBottom:10}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:8}}>🎵 音域データ</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+          <div><Label>最低音</Label><input value={form.lowNote} onChange={e=>upd("lowNote",e.target.value)} placeholder="E3" style={inp}/></div>
+          <div><Label>最高音</Label><input value={form.highNote} onChange={e=>upd("highNote",e.target.value)} placeholder="A4" style={inp}/></div>
+          <div><Label>音程正確率%</Label><input type="number" value={form.pitchRate} onChange={e=>upd("pitchRate",e.target.value)} placeholder="89" style={inp}/></div>
+        </div>
+      </Card>
+
+      <Card T={T} style={{marginBottom:10}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:8}}>📊 採点詳細</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          <div><Label>ビブラート(秒)</Label><input type="number" value={form.vibrato} onChange={e=>upd("vibrato",e.target.value)} placeholder="14.887" style={inp}/></div>
+          <div><Label>ロングトーン(秒)</Label><input type="number" value={form.longTone} onChange={e=>upd("longTone",e.target.value)} placeholder="14.887" style={inp}/></div>
+          <div><Label>抑揚</Label><input type="number" value={form.expression} onChange={e=>upd("expression",e.target.value)} placeholder="67" style={inp}/></div>
+          <div><Label>安定性</Label><input type="number" value={form.stability} onChange={e=>upd("stability",e.target.value)} placeholder="80" style={inp}/></div>
+          <div><Label>リズム</Label><input type="number" value={form.rhythm} onChange={e=>upd("rhythm",e.target.value)} placeholder="75" style={inp}/></div>
+        </div>
+      </Card>
+
+      <Card T={T} style={{marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:T.accent,marginBottom:6}}>📝 メモ</div>
+        <textarea value={form.memo} onChange={e=>upd("memo",e.target.value)} rows={2} placeholder="今日の感想..." style={{...inp,resize:"none"}}/>
+      </Card>
+
+      <button onClick={save_} style={{width:"100%",padding:14,background:T.accent,border:"none",borderRadius:12,color:"#FFF",fontWeight:700,fontSize:15,cursor:"pointer"}}>記録を保存 ✍️</button>
+    </div>
+  );
+}
+
+// ====== APP ======
+function App(){
+  const [data,setData]=useState(()=>load());
+  const [page,setPage]=useState("home");
+  const [selRecord,setSelRecord]=useState(null);
+  const [selSong,setSelSong]=useState(null);
+  const [themeId,setThemeId]=useState(()=>localStorage.getItem(TK)||"note");
+  const setTheme=useCallback(id=>{setThemeId(id);localStorage.setItem(TK,id);},[]);
+  const T=THEMES[themeId]||THEMES.note;
+
+  return(
+    <div style={{maxWidth:430,margin:"0 auto",height:"100vh",display:"flex",flexDirection:"column",background:T.bg,color:T.text,position:"relative",overflow:"hidden"}}>
+      <div style={{flex:1,overflowY:"auto"}}>
+        {page!=="record"&&page!=="detail"&&<PersonTabs data={data} setData={setData} page={page} setPage={setPage} T={T}/>}
+        {page==="home"&&<Home data={data} setPage={setPage} setSelRecord={setSelRecord} T={T}/>}
+        {page==="history"&&<History data={data} setData={setData} setPage={setPage} setSelRecord={setSelRecord} T={T}/>}
+        {page==="detail"&&<Detail data={data} setData={setData} recordId={selRecord} setPage={setPage} T={T}/>}
+        {page==="songs"&&<Songs data={data} setPage={setPage} setSelSong={setSelSong} T={T}/>}
+        {page==="songdetail"&&<SongDetail data={data} setData={setData} songTitle={selSong} setPage={setPage} setSelRecord={setSelRecord} T={T}/>}
+        {page==="analysis"&&<Analysis data={data} setPage={setPage} T={T}/>}
+        {page==="mypage"&&<MyPage data={data} setData={setData} setPage={setPage} currentThemeId={themeId} setTheme={setTheme} T={T}/>}
+        {page==="record"&&<Record data={data} setData={setData} setPage={setPage} T={T}/>}
+      </div>
+      {page!=="record"&&<Nav page={page} setPage={setPage} T={T}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
