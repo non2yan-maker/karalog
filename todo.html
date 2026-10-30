@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>のんのTodoボード v17</title>
+<title>のんのTodoボード v18</title>
 <link rel="apple-touch-icon" href="icon-todo.png">
 <link rel="icon" type="image/png" href="icon-todo.png">
 <style>
@@ -231,10 +231,16 @@ table.cal{border-spacing:8px}
 .addmsg.show{display:block}
 .addmsg.warn{background:rgba(214,69,69,.12);border-color:#D64545}
 </style>
+<style>
+td.day .dots{display:flex;flex-wrap:wrap;gap:3px;align-items:center;margin-top:3px;line-height:1}
+td.day .cstk{width:26px;height:26px;border-radius:7px;object-fit:cover;display:block;box-shadow:0 1px 3px rgba(90,75,45,.35)}
+td.day .more{font-size:10px;font-weight:700;color:#8a6d3b;background:rgba(255,255,255,.78);border:1px solid rgba(184,154,104,.65);border-radius:8px;padding:1px 5px;line-height:1.5}
+#calDayList .bigstk{width:60px;height:60px;border-radius:17px}
+</style>
 </head>
 <body>
 <header>
-  <h1>のんのTodoボード<span class="ver">v17</span></h1>
+  <h1>のんのTodoボード<span class="ver">v18</span></h1>
   <div class="todayline" id="todayLine"></div>
   <div class="patternstrip"></div>
 </header>
@@ -581,7 +587,18 @@ function renderCal(){
     html+='<td class="'+cls+'" data-date="'+dateStr+'"><div class="dnum">'+dayNum+'</div>';
     if(dayTasks.length){
       html+='<div class="cnt">'+dayTasks.length+'件</div><div class="dots">';
-      dayTasks.slice(0,4).forEach(function(t){ if(t.type==="event" && t.sticker){ if(STICKER_IMGS[t.sticker]){ html+='<img src="'+STICKER_IMGS[t.sticker]+'" style="width:17px;height:17px;border-radius:5px;vertical-align:-3px;box-shadow:0 1px 3px rgba(90,75,45,.35)">'; } else { html+='<span style="font-size:13px;line-height:1.4">'+t.sticker+'</span>'; } } else { html+='<span class="dot" style="background:'+catOf(t.cat).color+'"></span>'; } });
+      var stkShown=0, stkTotal=0, dotShown=0;
+      dayTasks.forEach(function(t){ if(t.type==="event" && t.sticker && STICKER_IMGS[t.sticker]) stkTotal++; });
+      dayTasks.forEach(function(t){
+        if(t.type==="event" && t.sticker && STICKER_IMGS[t.sticker]){
+          if(stkShown<3){ html+='<img class="cstk" src="'+STICKER_IMGS[t.sticker]+'" alt="">'; stkShown++; }
+        } else if(t.type==="event" && t.sticker){
+          html+='<span style="font-size:13px;line-height:1.4">'+t.sticker+'</span>';
+        } else if(dotShown<6){
+          html+='<span class="dot" style="background:'+catOf(t.cat).color+'"></span>'; dotShown++;
+        }
+      });
+      if(stkTotal>3) html+='<span class="more">+'+(stkTotal-3)+'件</span>';
       html+='</div>';
       if(openN>=2) html+='<div class="warn">⚠重なり</div>';
     }
