@@ -191,7 +191,7 @@ function findSong(title){return SONG_DB.find(x=>x.title===title)||null;}
 //  - "(from SOULHEAD)" のような feat.元の注記を除く（同曲の別表記）
 //  - 半角・全角スペースを全部除く（" (from" と "(from" の違いを吸収）
 //  - 英字の大文字小文字をそろえる。表示用のタイトルは変えない。
-function songKey(title){return String(title||"").replace(/\([^)]*from[^)]*\)/gi,"").replace(/[\s　]+/g,"").toLowerCase();}
+function songKey(title){return String(title||"").replace(/（/g,"(").replace(/）/g,")").replace(/\((?:feat\.?|ft\.?|from)[^)]*\)/gi,"").replace(/\s+-.*$/,"").replace(/[\s　]+/g,"").toLowerCase();}
 function nationalAvgOf(r){const m=(r.memo||"").match(/全国平均\s*([0-9.]+)/);return m?parseFloat(m[1]):null;}
 
 // ====== COMPONENTS ======
